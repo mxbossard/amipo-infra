@@ -1,0 +1,87 @@
+---
+
+- name: Install and setup LXC on hosts
+  hosts: all
+  become: yes
+
+  vars:
+    lxcVgName: lxc-vg
+    lxcLvName: lxc-lv
+    lxcLvSize: 4G
+    lxcVolPath: /mnt/lxc2
+    lxcUser: lxc
+
+  tasks:
+    - name: Installation de LXC et autre
+      apt: pkg="{{item}}" update_cache=yes cache_valid_time=3600
+      with_items:
+        - lxc
+        - libvirt0
+        - libpam-cgroup
+        - libpam-cgfs
+        - bridge-utils
+        - acl
+        - xz-utils
+        - lvm2
+
+#    - name: Ajout du repo contrib
+#      apt_repository:
+#        repo: deb http://deb.debian.org/debian stretch main contrib non-free
+#        state: present
+#
+#    - name: Installation de ZFS
+#      apt: pkg="{{item}}" update_cache=yes cache_valid_time=3600
+#        with_items:
+#          - zfs-dkms 
+#          - zfsutils-linux
+#
+#    - name: Enable zfs kernel module
+#      modprobe:
+#        name: zfs
+#        state: present
+#
+#    - name: Restart zfs services
+#      service:
+#        name: {{item}}
+#        state: restarted
+#        with_items:
+#          - zfs-import-cache
+#          - zfs-import-scan
+#          - zfs-mount
+#          - zfs-share
+#
+#    - name: Create lxc zpool
+#      command: zpool create -O compression=gzip zpool /dev/sdb -o ashift=12 -O secondarycache=all creates=/lxc
+
+    - name: Add lxc user
+      user:
+        name: "{{lxcUser}}"
+        system: yes
+
+    - name: Create lxc lvm vol
+      lvol:
+        vg: "{{lxcVgName}}"
+        lv: "{{lxcLvName}}"
+        size: "{{lxcLvSize}}"
+
+    - name: Create lxc FS
+      filesystem:
+        fstype: ext4
+        dev: /dev/{{lxcVgName}}/{{lxcLvName}}
+
+    - name: Mount lxc FS
+      mount:
+        name: "{{lxcVolPath}}"
+        src: /dev/{{lxcVgName}}/{{lxcLvName}}
+        fstype: ext4
+        opts: rw
+        state: mounted
+
+    - name: Give FS ownershif to lxc user
+      file:
+        path: "{{lxcVolPath}}"
+        owner: "{{lxcUser}}"
+        group: "{{lxcUser}}"
+        mode: 0755
+
+

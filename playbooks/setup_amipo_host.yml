@@ -1,0 +1,9 @@
+---
+
+- name: setup an amipo lxc host
+  hosts: lxc_host
+  tasks:
+    - debug: msg="setup an amipo lxc host"
+    
+- import_playbook: install_lxc.yml
+
