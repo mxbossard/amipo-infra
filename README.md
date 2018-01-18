@@ -27,3 +27,5 @@ vagrant up
 ## Test if the setup works
 ansible test -m ping
 
+## Pour se connecter via ssh dans la VM (amipo1.vagrant)
+vagrant ssh amipo1.vagrant
