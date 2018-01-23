@@ -1,3 +1,5 @@
 .vagrant
 *.swp
 *.vdi
+*.retry
+*.log

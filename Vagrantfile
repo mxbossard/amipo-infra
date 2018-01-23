@@ -5,9 +5,11 @@ amipo_lxc_disk_file = "amipo1_disk1.vdi"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Use the same key for each machine
   config.ssh.insert_key = false
+  config.vm.box = "ubuntu/xenial64"
 
+  # VM of an AMIPO host managing LXC containers
   config.vm.define "amipo1.vagrant" do |machine|
-    machine.vm.box = "debian/stretch64"
+    #machine.vm.box = "debian/stretch64"
     machine.vm.hostname = "amipo1"
     
     # Forward port if no private IP
@@ -15,7 +17,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #machine.vm.network "forwarded_port", guest: 443, host: 8443
 
     # Define a private IP
-    machine.vm.network :private_network, ip: "192.168.56.101"
+    machine.vm.network :private_network, ip: "192.168.56.111"
 
     machine.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -35,7 +37,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
         vb.customize [
           'storageattach', :id,
-          '--storagectl', 'SATA Controller',
+          '--storagectl', 'SATAController',
           '--port', 1, 
           '--device', 0,
           '--type', 'hdd', '--medium',
@@ -55,13 +57,31 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
 
     # Provision with ansible
-    machine.vm.provision :ansible do |ansible|
+    #machine.vm.provision :ansible do |ansible|
+    #  ansible.playbook = "playbooks/setup_amipo_host.yml"
+    #  ansible.groups = {
+    #    "lxc_host" => ["amipo1.vagrant"]
+    #  }
+    #end
+
+  end
+
+  # VM of an AMIPO controller managing deployment.
+  config.vm.define "controller.vagrant" do |machine|
+    #machine.vm.box = "ubuntu/xenial64"
+    machine.vm.hostname = "controller"
+
+    # Define a private IP
+    machine.vm.network :private_network, ip: "192.168.56.101"
+
+    # Run Ansible from the Vagrant VM
+    machine.vm.provision "ansible_local" do |ansible|
       ansible.playbook = "playbooks/setup_amipo_host.yml"
+      ansible.install_mode = "pip"
       ansible.groups = {
         "lxc_host" => ["amipo1.vagrant"]
       }
     end
-
   end
 
 end
