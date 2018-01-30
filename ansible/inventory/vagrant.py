@@ -20,20 +20,29 @@ def parse_args():
 
 def list_running_hosts():
     cmd = "vagrant status --machine-readable"
-    status = subprocess.check_output(cmd.split()).rstrip()
     hosts = []
-    for line in status.split('\n'):
-        (_, host, key, value) = line.split(',')[:4]
-        if key == 'state' and value == 'running':
-            hosts.append(host)
+    try:
+        status = subprocess.check_output(cmd.split()).rstrip()
+        for line in status.split('\n'):
+            (_, host, key, value) = line.split(',')[:4]
+            if key == 'state' and value == 'running':
+                hosts.append(host)
+    except:
+        # Catch errors if vagrant not available
+        pass
+
     return hosts
 
 
 def get_host_details(host):
     cmd = "vagrant ssh-config {}".format(host)
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
     config = paramiko.SSHConfig()
-    config.parse(p.stdout)
+    try:
+        # Catch errors if vagrant not available
+        p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        config.parse(p.stdout)
+    except:
+        pass
     c = config.lookup(host)
     return {'ansible_host': c['hostname'],
             'ansible_port': c['port'],

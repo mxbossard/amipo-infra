@@ -1,0 +1,13 @@
+controller
+amipo1
+
+[tests]
+controller
+amipo1
+
+[lxc_hosts]
+amipo1
+
+[controllers]
+controller
+

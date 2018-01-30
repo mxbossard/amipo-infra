@@ -1,0 +1,9 @@
+---
+
+- name: Provision test VMs
+  hosts: tests
+  tasks:
+    - debug: msg="Provision test VMs"
+    
+- import_playbook: install_lxc.yml
+

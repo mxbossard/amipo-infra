@@ -24,6 +24,9 @@ then
 	usage
 fi
 
+# Generate personal ssh keys for vagrant VMs
+#yes | ssh-keygen -b 4096 -t rsa -f ansible/.ssh/vagrant_ssh_key -q -N ""
+
 tmpDir="$(mktemp -d /tmp/vagrant.XXXXXXXXXX)"
 cd $tmpDir
 for file in $vagrantSignature $vagrantChecksum $vagrantBinary
@@ -64,6 +67,9 @@ then
 	# FIXME are they the good packages names ?
 	sudo yum install -y virtualbox-dkms virtualbox
 fi
+
+# Install vagrant plugins
+vagrant plugin install landrush vagrant-persistent-storage
 
 rm -- $tmpDir/$vagrantSignature $tmpDir/$vagrantChecksum $tmpDir/$vagrantBinary
 rmdir -- $tmpDir
