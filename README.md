@@ -13,12 +13,9 @@ We call this VMs our test environment.
 ## "Easy" setup
 
 ### Clone of the project
-`
-git clone git@github.com:mxbossard/amipo-infra.git
+`git clone git@github.com:mxbossard/amipo-infra.git`
 
-cd amipo-infra
-
-`
+`cd amipo-infra`
 
 ### Minimal installation of vagrant + virtualbox on your computer
 _Manual installation described in a further chapter_
@@ -32,6 +29,7 @@ _During first vagrant up, vagrant may complain about SATA Controller._
 
 ### Test if the setup works: connect into VM controller
 `vagrant ssh controller`
+
 `ansible all -m ping`
 
 ## TODO Vagrant
