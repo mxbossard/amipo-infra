@@ -5,7 +5,7 @@
 # Config
 VAGRANT_REPO_URL="https://releases.hashicorp.com/vagrant"
 VAGRANT_VERSION="2.0.1"
-
+VAGRANT_PLUGINS="landrush vagrant-persistent-storage"
 
 vagrantPackageType="$1" # ether dep or rpm
 vagrantBaseUrl="$VAGRANT_REPO_URL/$VAGRANT_VERSION"
@@ -27,50 +27,66 @@ fi
 # Generate personal ssh keys for vagrant VMs
 #yes | ssh-keygen -b 4096 -t rsa -f ansible/.ssh/vagrant_ssh_key -q -N ""
 
-tmpDir="$(mktemp -d /tmp/vagrant.XXXXXXXXXX)"
-cd $tmpDir
-for file in $vagrantSignature $vagrantChecksum $vagrantBinary
-do
-	echo "Downloading of $vagrantBaseUrl/$file ..."
-	curl -OS "$vagrantBaseUrl/$file"
-done
+install_vagrant() {
+	tmpDir="$(mktemp -d /tmp/vagrant.XXXXXXXXXX)"
+	cd $tmpDir
+	for file in $vagrantSignature $vagrantChecksum $vagrantBinary
+	do
+		echo "Downloading of $vagrantBaseUrl/$file ..."
+		curl -OS "$vagrantBaseUrl/$file"
+	done
 
-if [ "$vagrantPackageType" = "deb" ]
+	if [ "$vagrantPackageType" = "deb" ]
+	then
+		sudo apt install gpgv
+	elif [ "$vagrantPackageType" = "rpm" ]
+	then
+		# FIXME is it the good package name ?
+		sudo yum install gpgv
+	fi
+
+	echo "Verifying Vagrant checksum..."
+
+	# Import hashicorp gpg public key
+	gpg --import hashicorp.asc
+
+	# Verify the signature file is untampered.
+	gpg --verify $vagrantSignature $vagrantChecksum
+
+	# Verify the SHASUM matches the binary.
+	grep "$vagrantBinary" $vagrantChecksum | shasum -a 256 -c
+
+	echo "Installing Vagrant and VirtualBox..."
+
+	if [ "$vagrantPackageType" = "deb" ]
+	then
+		sudo dpkg -i $vagrantBinary
+		sudo apt install -y virtualbox-dkms virtualbox
+	elif [ "$vagrantPackageType" = "rpm" ]
+	then
+		sudo rmp -ivh $vagrantBinary
+		# FIXME are they the good packages names ?
+		sudo yum install -y virtualbox-dkms virtualbox
+	fi
+
+	rm -- $tmpDir/$vagrantSignature $tmpDir/$vagrantChecksum $tmpDir/$vagrantBinary
+	rmdir -- $tmpDir
+}
+
+install_vagrant_plugins() {
+	vagrant plugin install $VAGRANT_PLUGINS
+}
+
+
+# Check vagrant version installed
+if [ "$(vagrant -v || echo 'Nope')" = "Vagrant $VAGRANT_VERSION" ]
 then
-	sudo apt install gpgv
-elif [ "$vagrantPackageType" = "rpm" ]
-then
-	# FIXME is it the good package name ?
-	sudo yum install gpgv
+	echo "Vagrant $VAGRANT_VERSION already installed."
+else
+	echo "Installing Vagrant..."
+	install_vagrant
 fi
 
-echo "Verifying Vagrant checksum..."
-
-# Import hashicorp gpg public key
-gpg --import hashicorp.asc
-
-# Verify the signature file is untampered.
-gpg --verify $vagrantSignature $vagrantChecksum
-
-# Verify the SHASUM matches the binary.
-grep "$vagrantBinary" $vagrantChecksum | shasum -a 256 -c
-
-echo "Installing Vagrant and VirtualBox..."
-
-if [ "$vagrantPackageType" = "deb" ]
-then
-	sudo dpkg -i $vagrantBinary
-	sudo apt install -y virtualbox-dkms virtualbox
-elif [ "$vagrantPackageType" = "rpm" ]
-then
-	sudo rmp -ivh $vagrantBinary
-	# FIXME are they the good packages names ?
-	sudo yum install -y virtualbox-dkms virtualbox
-fi
-
-# Install vagrant plugins
-vagrant plugin install landrush vagrant-persistent-storage
-
-rm -- $tmpDir/$vagrantSignature $tmpDir/$vagrantChecksum $tmpDir/$vagrantBinary
-rmdir -- $tmpDir
+# Try to install vagrant plugins
+install_vagrant_plugins
 

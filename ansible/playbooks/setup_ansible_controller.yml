@@ -1,0 +1,12 @@
+---
+
+- name: Setup ansible controller
+  hosts: controllers
+  become: yes
+
+  vars:
+
+  tasks:
+    - name: Add cd ansible to .profile file
+      lineinfile: path="/home/vagrant/.profile" line="cd /home/vagrant/ansible" 
+

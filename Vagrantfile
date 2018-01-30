@@ -104,8 +104,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     machine.vm.network :private_network, ip: "192.168.56.101"
 
     # Mount vagrant dir to vagrant home
-    #machine.vm.synced_folder "./ansible", "/home/vagrant/ansible"
-    machine.vm.synced_folder "./ansible", "/home/vagrant/", type: "rsync", rsync__exclude: ".*"
+    machine.vm.synced_folder "./ansible", "/home/vagrant/ansible"
     # Copy insecure_private_key in controller guest for ansible usage
     machine.vm.synced_folder "#{Dir.home}/.vagrant.d", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{Dir.home}/.vagrant.d/insecure_private_key"]
 
@@ -115,21 +114,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Run Ansible from the Vagrant VM
     machine.vm.provision "ansible_local" do |ansible|
-      ansible.playbook = "playbooks/provision_amipo_test.yml"
       ansible.install_mode = "pip"
       ansible.verbose = true
       ansible.compatibility_mode = "2.0"
-      #ansible.provisioning_path = "/home/vagrant/ansible"
-      ansible.provisioning_path = "/home/vagrant"
-      #ansible.config_file = "/home/vagrant/ansible/ansible.cfg"
+      ansible.provisioning_path = "/home/vagrant/ansible"
       ansible.config_file = "ansible.cfg"
       ansible.inventory_path = "inventory"
+      ansible.playbook = "playbooks/provision_amipo_test.yml"
       ansible.limit = "all"
-#      ansible.groups = {
-#        "controllers" => ["controller.vagrant.test"],
-#        "lxc_hosts" => ["amipo1"],
-#        "tests" => ["controller.vagrant.test, amipo1.vagrant.test"]
-#      }
     end
   end
 

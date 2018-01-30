@@ -33,9 +33,6 @@ _During first vagrant up, vagrant may complain about SATA Controller._
 `ansible all -m ping`
 
 ## TODO Vagrant
-* Ne pas avoir besoin du cd ansible dans le controller
-* Synchroniser les fichiers ansible du guest et du git sur le host
-* Le script installVagrant.sh devrait pouvoir être lancer pour maj son environnement
 * Faire en sorte que le DNS de landrush soit resolue directement sur le host
 * Faire en sorte de resoudre les noms cours comme amipo1 plutot que amipo1.vagrant.test
 * Accelerer l'installation d'ansible dans la vm controller

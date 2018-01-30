@@ -4,6 +4,8 @@
   hosts: tests
   tasks:
     - debug: msg="Provision test VMs"
+
+- import_playbook: setup_ansible_controller.yml
     
 - import_playbook: install_lxc.yml
 
