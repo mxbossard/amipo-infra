@@ -1,5 +1,5 @@
-controller
-amipo1
+controller	ansible_user=vagrant ansible_private_key_file=~/.vagrantSsh/insecure_private_key
+amipo1		ansible_user=vagrant ansible_private_key_file=~/.vagrantSsh/insecure_private_key
 
 [tests]
 controller

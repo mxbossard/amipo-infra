@@ -130,7 +130,7 @@
         force: no
         owner: root
         group: root
-        mode: 644
+        mode: 0644
 
     - name: Configure dnsmasq to use a hostsfile
       lineinfile:
@@ -147,7 +147,17 @@
         force: no
         owner: root
         group: root
-        mode: 644
+        mode: 0644
+
+    - name: Copy lxc inventory script
+      template:
+        src: lxcInventory.py
+        dest: /home/{{lxcUser}}/lxcInventory.py
+        owner: "{{lxcUser}}"
+        group: "{{lxcUser}}"
+        mode: 0744
+
+
 
   handlers:
     - name: Restart lxc-net

@@ -5,8 +5,16 @@
   become: yes
 
   vars:
+    controllerUser: vagrant
+    controllerHome: /home/{{controllerUser}}
+    provisioningKeyFilepath: "{{controllerHome}}/.ssh/provisioning_key"
 
   tasks:
     - name: Add cd ansible to .profile file
       lineinfile: path="/home/vagrant/.profile" line="cd /home/vagrant/ansible" 
 
+    - name: Build provisioning ssh key pair
+      shell: "/bin/bash -c 'ssh-keygen -b 4096 -t rsa -f {{provisioningKeyFilepath}} -q -N \"\"'"
+      args:
+        creates: "{{provisioningKeyFilepath}}"
+      become_user: {{controllerUser}}

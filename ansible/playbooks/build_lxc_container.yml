@@ -8,9 +8,11 @@
   vars:
     tmpLxcConfigFile: /tmp/lxc-{{containerName}}.conf
     lxcContainerRepo: /home/{{lxcUser}}/.local/share/lxc
-    ctIp: 10.0.3.70
-    ctNetmask: 255.255.255.0
-    ctGateway: 10.0.3.1
+    #ctIp: 10.0.3.70
+    distribName: alpine
+    distribRelease: 3.7
+    provisioningUser: manager
+    provisioningKey: "{{ lookup('file', '~/.ssh/provisioning_key.pub') }}"
 
   vars_prompt:
     - name: "containerName"
@@ -38,18 +40,19 @@
       become_user: root
       notify:
         - Reload dnsmasq config
+      when: ctIp is defined
 
     - name: Create new container named {{containerName}} and start it
       lxc_container:
         name: "{{containerName}}"
         config: "{{tmpLxcConfigFile}}"
+        backing_store: dir
         container_log: true
         container_log_level: DEBUG
         state: started
         template: download
-        template_options: --dist alpine --release 3.7 --arch amd64
+        template_options: --dist {{distribName}} --release {{distribRelease}} --arch amd64
 #        template_options: --dist ubuntu --release xenial --arch amd64
-        backing_store: dir
 #        lxc_path: "{{lxcVolPath}}"
 #        directory: "{{lxcVolPath}}/{{containerName}}/rootfs"
 #        fs_type: ext4
@@ -59,6 +62,11 @@
       file:
         path: "{{tmpLxcConfigFile}}"
         state: absent
+
+    - name: Initialize Alpine container
+      shell: "lxc-attach -n {{containerName}} --clear-env -e -- /bin/sh -c 'su -; apk update; apk upgrade; apk add openssh python2; adduser -D {{provisioningUser}} || true; passwd -u {{provisioningUser}}; mkdir /home/{{provisioningUser}}/.ssh || true; echo \"{{provisioningKey}}\" > /home/{{provisioningUser}}/.ssh/authorized_keys; chown -R {{provisioningUser}}:{{provisioningUser}} /home/{{provisioningUser}}; chmod 700 /home/{{provisioningUser}}/.ssh; chmod 600 /home/{{provisioningUser}}/.ssh/authorized_keys; rc-update add sshd; /etc/init.d/sshd start'"
+      register: ctInitMsg
+      #failed_when: ctInitMsg.stderr != ''
 
 
   handlers:
