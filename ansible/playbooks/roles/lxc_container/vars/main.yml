@@ -1,0 +1,7 @@
+lxcVgName: lxc-vg
+lxcLvName: lxc-lv
+lxcLvSize: 4G
+lxcVolPath: /home/lxc
+lxcUser: lxc
+
+ctSize: 1G

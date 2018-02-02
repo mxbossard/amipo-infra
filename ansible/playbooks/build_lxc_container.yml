@@ -1,0 +1,95 @@
+---
+
+- name: Build a LXC container
+  hosts: lxc_hosts
+  become: yes
+  become_user: "{{lxcUser}}"
+
+  vars:
+    tmpLxcConfigFile: /tmp/lxc-{{containerName}}.conf
+    lxcContainerRepo: /home/{{lxcUser}}/.local/share/lxc
+    ctIp: 10.0.3.70
+    ctNetmask: 255.255.255.0
+    ctGateway: 10.0.3.1
+
+  vars_prompt:
+    - name: "containerName"
+      prompt: "What is the container name ?"
+      private: no
+      default: "foo"
+
+  roles:
+    - role: lxc_container
+
+  tasks:
+    - name: Create lxc specific config file
+      template:
+        src: lxc-container.conf.j2
+        dest: "{{tmpLxcConfigFile}}"
+        owner: "{{lxcUser}}"
+        group: "{{lxcUser}}"
+        mode: 0400
+
+    - name: Config dnsmasq to fix container IP
+      lineinfile:
+        path: /etc/lxc/dnsmasq-hosts.conf
+        regexp: "^{{containerName}}"
+        line: "{{containerName}},{{ctIp}}"
+      become_user: root
+      notify:
+        - Reload dnsmasq config
+
+    - name: Create new container named {{containerName}} and start it
+      lxc_container:
+        name: "{{containerName}}"
+        config: "{{tmpLxcConfigFile}}"
+        container_log: true
+        container_log_level: DEBUG
+        state: started
+        template: download
+        template_options: --dist alpine --release 3.7 --arch amd64
+#        template_options: --dist ubuntu --release xenial --arch amd64
+        backing_store: dir
+#        lxc_path: "{{lxcVolPath}}"
+#        directory: "{{lxcVolPath}}/{{containerName}}/rootfs"
+#        fs_type: ext4
+#        fs_size: 1G
+
+    - name: Remove lxc config file
+      file:
+        path: "{{tmpLxcConfigFile}}"
+        state: absent
+
+
+  handlers:
+    - name: Reload dnsmasq config
+      shell: "/bin/bash -c 'kill -HUP $(cat /var/run/lxc/dnsmasq.pid)'"
+      become_user: root
+      notify: Restart lxc container
+
+    - name: Restart lxc container
+      lxc_container:
+        name: "{{containerName}}"
+        container_log: true
+        container_log_level: DEBUG
+        state: restarted
+      notify: Read ct IP
+
+    - name: Register container IP
+      #shell: "/bin/bash -c 'ctIp=\"\"; while [[ $ctIp == \"\" ]]; do ctIp=$(lxc-info -n {{containerName}} -iH); sleep 1; done; echo $ctIp'"
+      shell: "/bin/bash -c 'lxc-info -n {{containerName}} -iH'"
+      register: containerIpResult
+      until: containerIpResult.stdout != ''
+      retries: 60
+      delay: 1
+      failed_when: containerIpResult.stderr != '' or containerIpResult.stdout == ''
+      listen: Read ct IP
+
+    - set_fact: containerIp={{containerIpResult.stdout}}
+      listen: Read ct IP
+
+    - debug: var=containerIp
+      listen: Read ct IP
+
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

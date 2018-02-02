@@ -23,8 +23,6 @@ _Manual installation described in a further chapter_
 `./installVagrant.sh`
 
 ### Creation of project local test VMs with vagrant
-_During first vagrant up, vagrant may complain about SATA Controller._
-
 `vagrant up`
 
 ### Test if the setup works: connect into VM controller
@@ -38,6 +36,11 @@ _During first vagrant up, vagrant may complain about SATA Controller._
 * Accelerer l'installation d'ansible dans la vm controller
 * Utiliser une cle ssh perso plutot que la cle insecure_private_key de vagrant ?
 
+
+## TODO Ansible
+* Construire un conteneur LXC non privilégié
+* Fournir un conteneur Frontal nginx
+* Fournir un conteneur Accueil ssh (lobby)
 
 
 ### Setup on debian like system
