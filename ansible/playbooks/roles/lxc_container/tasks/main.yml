@@ -64,7 +64,7 @@
   become: yes
   notify:
     - Reload dnsmasq config
-
+    - Add CT to inventory
 
 - name: Check IP is corretly assigned
   assert:
@@ -97,10 +97,5 @@
 
 - name: Flush handlers
   meta: flush_handlers
-
-- name: Add CT to inventory
-  add_host:
-    hostname: "{{ discoveredCtIp }}"
-    groups: "{{ ctGroups }}"
 
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

@@ -26,7 +26,13 @@
 # Use iptables-persistent package to save rules
 - name: Save iptables rules
   shell: "iptables-save > /etc/iptables/rules.v4"
-  output: /etc/iptables/rules.v4
+  args:
+    create: /etc/iptables/rules.v4
   become: yes
+
+- name: Add CT to inventory
+  add_host:
+    hostname: "{{ discoveredCtIp }}"
+    groups: "{{ ctGroups }}"
 
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

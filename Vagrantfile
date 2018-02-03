@@ -23,56 +23,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
     # Reduce Ubuntu boot time
     vb.customize ["modifyvm", :id, "--uartmode1", "disconnected" ]
+
+    # Default vm config
+    vb.customize ["modifyvm", :id, "--memory", 512]
   end
 
 
   # VM of an AMIPO host managing LXC containers
   config.vm.define "amipo1" do |machine|
-    #machine.vm.box = "debian/stretch64"
-    #machine.vm.hostname = "amipo1.vagrant.test"
     machine.vm.hostname = "amipo1.dev"
     
-    # Forward port if no private IP
-    #machine.vm.network "forwarded_port", guest: 80, host: 8080
-    #machine.vm.network "forwarded_port", guest: 443, host: 8443
-
     # Define a private IP
     machine.vm.network :private_network, ip: "192.168.56.111"
 
     machine.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", 512]
+      # Change vm ID, needed for storage
       vb.customize ["modifyvm", :id, "--name", "amipo1"]
-
-#      # Validate this should be run it once
-#      if ARGV[0] == "up" && ! File.exist?(amipo_lxc_disk_file)
-#        vb.customize [
-#          'createhd',
-#          '--filename', amipo_lxc_disk_file,
-#          '--format', 'VDI',
-#          # 2GB
-#          '--size', 2 * 1024 * 1024
-#        ]
-#
-#        vb.customize [
-#          'showvminfo', :id
-#        ]
-#
-#        vb.customize [
-#          'storageattach', :id,
-#          #'--storagectl', 'SATA Controller', # For debian
-#          #'--storagectl', 'IDE Controller',
-#          #'--storagectl', 'SCSI', # For ubuntu
-#          '--storagectl', 'SATA', # For ubuntu
-#          '--port', 1, 
-#          '--device', 0,
-#          '--type', 'hdd', '--medium',
-#          amipo_lxc_disk_file
-#        ]
-#      end
-
-      # Run script to increase swap memory
-      #machine.vm.provision "shell", path: "increase_swap.sh"
-
     end
 
     # Ensure lvm2 is present in the box
@@ -89,8 +55,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     machine.persistent_storage.mountpoint = '/mnt/lxc'
     machine.persistent_storage.volgroupname = 'lxc-vg'
 
-    # Run script to map new disk
-    #machine.vm.provision "shell", path: "ansible/scripts/bootstrap_lvm.sh"
+    # Run script to increase swap memory
+    #machine.vm.provision "shell", path: "increase_swap.sh"
 
     # Install python 2.7
     machine.vm.provision "shell", inline: "sudo apt install -y python2.7; test -f /usr/bin/python || ln -s /usr/bin/python2.7 /usr/bin/python"
@@ -99,8 +65,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # VM of an AMIPO controller managing deployment.
   config.vm.define "controller" do |machine|
-    #machine.vm.box = "ubuntu/xenial64"
-    #machine.vm.hostname = "controller.vagrant.test"
     machine.vm.hostname = "controller.dev"
 
     # Define a private IP
@@ -108,11 +72,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Mount vagrant dir to vagrant home
     machine.vm.synced_folder "./ansible", "/home/vagrant/ansible"
+
     # Copy insecure_private_key in controller guest for ansible usage
     machine.vm.synced_folder "#{Dir.home}/.vagrant.d", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{Dir.home}/.vagrant.d/insecure_private_key"]
 
     machine.vm.provider :virtualbox do |vb|
-
+      vb.customize ["modifyvm", :id, "--memory", 256]
     end
 
     # Run Ansible from the Vagrant VM

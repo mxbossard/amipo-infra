@@ -119,7 +119,8 @@
     # Use iptables-persistent package to save rules
     - name: Save iptables rules
       shell: "iptables-save > /etc/iptables/rules.v4"
-      output: /etc/iptables/rules.v4
+      args:
+        creates: /etc/iptables/rules.v4
       become: yes
 
     - name: Use a configuration file for lxc-net dnsmasq

@@ -26,14 +26,27 @@ _Manual installation described in a further chapter_
 `vagrant up`
 
 ### Test if the setup works: connect into VM controller
+You should be able to browse <a href="http://amipo1.dev">http://amipo1.dev</a>
+
 `vagrant ssh controller`
 
 `ansible all -m ping`
 
+## Troubleshooting problems
+
+### Errors on vagrant up
+Previous build may interfer with new ones. You can clean vagrant env by removing some content in following directories:
+* .vagrant/machines/*
+* ~/VirtualBox VMs/*
+
+The additional drive on which are installed LXC containers can be removed too. It is located in ~/.vagrant/amipo1_disk_lxc.vdi
+
+### Unable to resolve vagrant box names
+You should be able to ping amipo1.dev and controller.dev from your host computer. If not dnsmasq is probably badly configured. You could try a `sudo service dnsmasq restart`.
+
 ## TODO Vagrant
-* Ameliorer le dialogue landrush/dnsmasq pour que amipo1.dev apparaisse automagiquement
-* Faire en sorte de resoudre les noms cours comme amipo1 plutot que amipo1.dev
 * Accelerer l'installation d'ansible dans la vm controller
+* Etudier la possibilité de provisionner avec ansible chaqhue vagrant box independament en passant par le controller
 * Utiliser une cle ssh perso plutot que la cle insecure_private_key de vagrant ?
 
 

@@ -1,0 +1,7 @@
+#! /bin/sh
+
+scriptDir=$(dirname $(readlink -f $0))
+cd $scriptDir/..
+
+vars="$@"
+vagrant ssh --tty -c "ansible $vars" controller

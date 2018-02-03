@@ -53,17 +53,26 @@
       lineinfile: 
         path: "{{ controllerHome }}/.profile"
         regexp: "ip route add {{ lxcSubnet }}"
-        line: "sudo ip route add {{ lxcSubnet }} via {{ lxcHostIp }} || true" 
+        line: "ip route show | grep '{{ lxcSubnet }}' > /dev/null || sudo ip route add {{ lxcSubnet }} via {{ lxcHostIp }} || true" 
 
     - name: Create dnsmasq lxc config file
       copy:
         content: ""
         dest: /etc/dnsmasq.d/lxc
         mode: 0644
+        force: no
 
     - name: Configure dnsmasq to resolve .lxc domain
       lineinfile:
         dest: /etc/dnsmasq.d/lxc
         regexp: "server="
-        line: "server=/lxc/{{ lxcHostIp }}"
+        line: "server=/lxc/{{ lxcGateway }}"
+      notify:
+        - Restart dnsmasq
+
+  handlers:
+    - name: Restart dnsmasq
+      service:
+        name: dnsmasq
+        state: restarted
 

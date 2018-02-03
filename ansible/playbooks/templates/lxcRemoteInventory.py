@@ -22,7 +22,7 @@ def list_running_hosts():
     hosts = []
     status = subprocess.check_output(cmd.split()).rstrip()
     for host in status.split('\n'):
-        hosts.append(host)
+        hosts.append(host + ".lxc")
 
     return hosts
 
