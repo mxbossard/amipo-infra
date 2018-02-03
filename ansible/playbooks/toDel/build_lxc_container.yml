@@ -64,7 +64,7 @@
         state: absent
 
     - name: Initialize Alpine container
-      shell: "lxc-attach -n {{containerName}} --clear-env -e -- /bin/sh -c 'su -; apk update; apk upgrade; apk add openssh python2; adduser -D {{provisioningUser}} || true; passwd -u {{provisioningUser}}; mkdir /home/{{provisioningUser}}/.ssh || true; echo \"{{provisioningKey}}\" > /home/{{provisioningUser}}/.ssh/authorized_keys; chown -R {{provisioningUser}}:{{provisioningUser}} /home/{{provisioningUser}}; chmod 700 /home/{{provisioningUser}}/.ssh; chmod 600 /home/{{provisioningUser}}/.ssh/authorized_keys; rc-update add sshd; /etc/init.d/sshd start'"
+      shell: "lxc-attach -n {{containerName}} --clear-env -e -- /bin/sh -c 'su -; apk update; apk upgrade; apk add openssh python2 sudo; adduser -D {{provisioningUser}} || true; passwd -u {{provisioningUser}}; echo \"manager ALL=(ALL) NOPASSWD:ALL\" > /etc/sudoers.d/manager; mkdir /home/{{provisioningUser}}/.ssh || true; echo \"{{provisioningKey}}\" > /home/{{provisioningUser}}/.ssh/authorized_keys; chown -R {{provisioningUser}}:{{provisioningUser}} /home/{{provisioningUser}}; chmod 700 /home/{{provisioningUser}}/.ssh; chmod 600 /home/{{provisioningUser}}/.ssh/authorized_keys; rc-update add sshd; /etc/init.d/sshd start'"
       register: ctInitMsg
       #failed_when: ctInitMsg.stderr != ''
 

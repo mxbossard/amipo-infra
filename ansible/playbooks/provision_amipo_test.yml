@@ -9,3 +9,5 @@
     
 - import_playbook: install_lxc.yml
 
+- import_playbook: front_nginx.yml
+

@@ -1,0 +1,13 @@
+# FS Config
+lxcVgName: lxc-vg
+lxcLvName: lxc-lv
+lxcLvSize: 4G
+lxcVolPath: /home/lxc
+
+# Setup config
+lxcUser: lxc
+
+lxcContainerRepo: /home/{{lxcUser}}/.local/share/lxc
+
+lxcSubnet: 10.0.3.0/24
+lxcGateway: 10.0.3.1

@@ -38,7 +38,7 @@ _Manual installation described in a further chapter_
 
 
 ## TODO Ansible
-* Construire un conteneur LXC non privilégié
+* Persister les regles iptables
 * Fournir un conteneur Frontal nginx
 * Fournir un conteneur Accueil ssh (lobby)
 

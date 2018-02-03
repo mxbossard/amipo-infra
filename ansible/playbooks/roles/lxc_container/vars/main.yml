@@ -1,7 +1,3 @@
-lxcVgName: lxc-vg
-lxcLvName: lxc-lv
-lxcLvSize: 4G
-lxcVolPath: /home/lxc
-lxcUser: lxc
+tmpLxcConfigFile: /tmp/lxc-{{ctName}}.conf
+lxcContainerRepo: /home/{{lxcUser}}/.local/share/lxc
 
-ctSize: 1G

@@ -1,0 +1,36 @@
+---
+
+- name: Destroy a LXC container
+  hosts: lxc_hosts
+
+  vars_files:
+    - config-global.yml
+    - "{{ configHome }}/lxc.yml"
+
+  vars_prompt:
+    - name: "ctName"
+      prompt: "What is the container name to destroy ?"
+      private: no
+
+  tasks:
+    - name: Remove dnsmasq config
+      lineinfile:
+        path: /etc/lxc/dnsmasq-hosts.conf
+        regexp: "^{{ ctName }}"
+        state: absent
+      become: yes
+    
+    - name: Destroy container named {{ ctName }}
+      shell: "lxc-stop -n {{ ctName }} || true; lxc-destroy -n {{ ctName }} || true"
+      args:
+        removes: "{{ lxcContainerRepo }}/{{ ctName }}/config"
+      become: yes
+      become_user: "{{ lxcUser }}"
+    
+    - name: Remove files
+      file:
+        path: "{{ lxcContainerRepo }}/{{ ctName }}"
+        state: absent
+      become: yes
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

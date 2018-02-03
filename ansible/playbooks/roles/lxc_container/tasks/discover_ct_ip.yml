@@ -1,0 +1,18 @@
+- name: Register container IP
+  shell: "lxc-info -n {{ctName}} -iH"
+  register: containerIpResult
+  until: containerIpResult.stdout != ''
+  retries: 60
+  delay: 1
+  changed_when: no
+  failed_when: containerIpResult.stderr != '' or containerIpResult.stdout == ''
+  become: yes
+  become_user: "{{lxcUser}}"
+
+- set_fact: discoveredCtIp={{containerIpResult.stdout}}
+
+- debug: var=discoveredCtIp
+
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2
+

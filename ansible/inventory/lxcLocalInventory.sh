@@ -1,6 +1,6 @@
 #! /bin/sh
 
-inventoryScript="/home/lxc/lxcInventory.py"
+inventoryScript="/home/lxc/lxcRemoteInventory.py"
 lxcUser="lxc"
 args="$@"
 

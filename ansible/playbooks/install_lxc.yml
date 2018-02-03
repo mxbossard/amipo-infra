@@ -4,13 +4,12 @@
   hosts: lxc_hosts
   become: yes
 
-  vars:
-
-  roles:
-    - role: lxc_container
+  vars_files:
+    - config-global.yml
+    - "{{ configHome }}/lxc.yml"
 
   tasks:
-    - name: Installation de LXC et les dependances necessaires
+    - name: Install LXC et les dependances necessaires
       apt: pkg="{{item}}" update_cache=yes cache_valid_time=3600
       with_items:
         - lxc
@@ -23,6 +22,7 @@
         - xz-utils
         - lvm2
         - python-pip
+        - dnsmasq
 
 #    - name: Ajout du repo contrib
 #      apt_repository:
@@ -132,7 +132,7 @@
         group: root
         mode: 0644
 
-    - name: Configure dnsmasq to use a hostsfile
+    - name: Configure LXC dnsmasq to use a hostsfile
       lineinfile:
         dest: /etc/lxc/dnsmasq.conf
         regexp: "^dhcp-hostsfile"
@@ -148,11 +148,29 @@
         owner: root
         group: root
         mode: 0644
+      notify:
+        - Restart lxc-net
+
+    - name: Configure LXC dnsmasq to resolve .lxc domain
+      lineinfile:
+        dest: /etc/default/lxc
+        regexp: "LXC_DOMAIN="
+        line: 'LXC_DOMAIN="lxc"'
+      notify:
+        - Restart lxc-net
+
+    - name: Configure Host dnsmasq to resolve .lxc domain
+      lineinfile:
+        dest: /etc/dnsmasq.d/lxc
+        regexp: "server="
+        line: "server=/lxc/{{ lxcGateway }}"
+      notify:
+        - Restart dnsmasq
 
     - name: Copy lxc inventory script
       template:
-        src: lxcInventory.py
-        dest: /home/{{lxcUser}}/lxcInventory.py
+        src: lxcRemoteInventory.py
+        dest: /home/{{lxcUser}}/lxcRemoteInventory.py
         owner: "{{lxcUser}}"
         group: "{{lxcUser}}"
         mode: 0744
@@ -164,4 +182,9 @@
       # Attention, pas top pour le moment, car lxc-net ne restart pas dnsmasq si un CT est running !
       service:
         name: lxc-net
+        state: restarted
+
+    - name: Restart dnsmasq
+      service:
+        name: dnsmasq
         state: restarted

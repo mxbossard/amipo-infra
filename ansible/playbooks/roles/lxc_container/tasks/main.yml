@@ -1,0 +1,106 @@
+---
+
+- name: Generate deterministic mac address
+  shell: "/bin/sh -c echo '{{ ctName }}' | sha1sum | sed -re 's/(..)(..)(..)(..).*/00:ff:\\1:\\2:\\3:\\4/'"
+  register: result
+  changed_when: no
+
+- set_fact: 
+    staticIpAvailable: true
+    ctDeterministicMacAddress: "{{result.stdout}}"
+
+- name: Create lxc specific config file
+  template:
+    src: lxc-container.conf.j2
+    dest: "{{tmpLxcConfigFile}}"
+    owner: "{{lxcUser}}"
+    group: "{{lxcUser}}"
+    mode: 0400
+  become: yes
+
+- name: Create new container named {{ctName}} and start it
+  lxc_container:
+    name: "{{ctName}}"
+    config: "{{tmpLxcConfigFile}}"
+    backing_store: dir
+    container_log: true
+    container_log_level: DEBUG
+    state: started
+    template: download
+    template_options: --dist {{distribName}} --release {{distribRelease}} --arch amd64
+    #template_options: --dist ubuntu --release xenial --arch amd64
+    #lxc_path: "{{lxcVolPath}}"
+    #directory: "{{lxcVolPath}}/{{ctName}}/rootfs"
+    #fs_type: ext4
+    #fs_size: 1G
+  notify: Wait for ping
+  become: yes
+  become_user: "{{lxcUser}}"
+
+- name: Remove lxc config file
+  file:
+    path: "{{tmpLxcConfigFile}}"
+    state: absent
+  become: yes
+
+- name: Initialize Alpine container
+  shell: "lxc-attach -n {{ctName}} --clear-env -e -- /bin/sh -c 'su -; apk update; apk upgrade; apk add openssh python2 sudo; adduser -D {{provisioningUser}} || true; passwd -u {{provisioningUser}}; echo \"manager ALL=(ALL) NOPASSWD:ALL\" > /etc/sudoers.d/manager; mkdir /home/{{provisioningUser}}/.ssh || true; echo \"{{provisioningPubKey}}\" > /home/{{provisioningUser}}/.ssh/authorized_keys; chown -R {{provisioningUser}}:{{provisioningUser}} /home/{{provisioningUser}}; chmod 700 /home/{{provisioningUser}}/.ssh; chmod 600 /home/{{provisioningUser}}/.ssh/authorized_keys; rc-update add sshd; /etc/init.d/sshd start'"
+  register: ctInitMsg
+  #failed_when: ctInitMsg.stderr != ''
+  until:  ctInitMsg | succeeded
+  become: yes
+  become_user: "{{lxcUser}}"
+  retries: 10
+  delay: 3
+
+- name: Discover CT IP
+  import_tasks: discover_ct_ip.yml
+
+- name: Config dnsmasq to fix container IP
+  lineinfile:
+    path: /etc/lxc/dnsmasq-hosts.conf
+    regexp: "^{{ctName}}"
+    line: "{{ctName}},{{discoveredCtIp}}"
+  become: yes
+  notify:
+    - Reload dnsmasq config
+
+
+- name: Check IP is corretly assigned
+  assert:
+    that: discoveredCtIp == ctIp
+  register: result
+  changed_when: result | failed
+  failed_when: no
+  notify: 
+    - Reload dnsmasq config
+    - Restart lxc container
+  when: staticIpAvailable and ctIp is defined
+  
+
+- name: Flush handlers
+  meta: flush_handlers
+
+# Use shell to interact with iptables because iptables modules is not idempotent
+- name: Remove previous iptables DNAT rules
+  shell: "iptables -t nat -S PREROUTING | grep DNAT | grep -v '{{ discoveredCtIp }}' | cut -d' ' -f2- | while read rule; do deleteCmd=\"iptables -t nat -D $rule\"; echo $deleteCmd; /bin/sh -c \"$deleteCmd\"; done"
+  register: result
+  changed_when: result.stdout != ""
+  become: yes
+
+- name: Configure iptables to forward traffic
+  shell: "iptables -t nat -S PREROUTING | grep -e '-d {{ lxcHostIp }}/32 -p tcp -m tcp --dport {{ item.key }} -j DNAT --to-destination {{ discoveredCtIp }}:{{ item.value }}' || iptables -t nat -A PREROUTING -d {{ lxcHostIp }}/32 -p tcp -m tcp --dport {{ item.key }} -j DNAT --to-destination {{ discoveredCtIp }}:{{ item.value }}"
+  register: result
+  changed_when: result.stdout == ""
+  become: yes
+  with_dict: "{{ ctPortsMapping }}"
+  when: ctPortsMapping is defined
+
+
+
+- name: Add CT to inventory
+  add_host:
+    hostname: "{{ discoveredCtIp }}"
+    groups: "{{ ctGroups }}"
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

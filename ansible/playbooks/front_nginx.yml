@@ -1,0 +1,47 @@
+---
+
+- name: Build a CT
+  hosts: lxc_hosts
+
+  vars:
+
+  vars_files:
+    - config-global.yml
+    - "{{ configHome }}/config-{{ envName }}.yml"
+    - "{{ configHome }}/lxc.yml"
+
+  roles:
+    - role: lxc_container
+      distribName: alpine
+      ctName: front
+      ctGroups: [ front, nginx ] 
+      ctPortsMapping: {80: 80, 443: 443}
+
+  tasks:
+ 
+
+- name: Setup front inside the CT
+  hosts: front
+  become: yes
+
+  tasks:
+    - name: Install nginx and dependencies
+      apk:
+        name: "{{ item }}"
+      with_items:
+        - nginx
+      notify: Reload nginx
+
+    - name: Configure nginx service
+      service:
+        name: nginx
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

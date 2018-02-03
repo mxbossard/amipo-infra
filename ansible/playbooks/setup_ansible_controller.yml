@@ -4,17 +4,66 @@
   hosts: controllers
   become: yes
 
+  vars_files:
+    - config-global.yml
+    - "{{ configHome }}/config-{{ envName }}.yml"
+    - "{{ configHome }}/lxc.yml"
+
   vars:
-    controllerUser: vagrant
-    controllerHome: /home/{{controllerUser}}
-    provisioningKeyFilepath: "{{controllerHome}}/.ssh/provisioning_key"
+    provisioningKeyFilepath: "{{ controllerHome }}/.ssh/provisioning_key"
 
   tasks:
+    - name: Install some packages
+      apt:
+        name: "{{ item }}"
+      with_items:
+        - dnsmasq
+
     - name: Add cd ansible to .profile file
-      lineinfile: path="/home/vagrant/.profile" line="cd /home/vagrant/ansible" 
+      lineinfile: 
+        path: "{{ controllerHome }}/.profile" 
+        line: "cd {{ ansibleHome }}" 
+
+    - name: Update PATH
+      lineinfile: 
+        path: "{{ controllerHome }}/.profile" 
+        line: "PATH=$PATH:/vagrant/scripts" 
 
     - name: Build provisioning ssh key pair
-      shell: "/bin/bash -c 'ssh-keygen -b 4096 -t rsa -f {{provisioningKeyFilepath}} -q -N \"\"'"
+      shell: "/bin/bash -c 'ssh-keygen -b 4096 -t rsa -f {{ provisioningKeyFilepath }} -q -N \"\"'"
       args:
-        creates: "{{provisioningKeyFilepath}}"
-      become_user: {{controllerUser}}
+        creates: "{{ provisioningKeyFilepath }}"
+      become_user: "{{ controllerUser }}"
+
+    - name: Copy lxc inventory script
+      template:
+        src: lxcLocalInventory.sh
+        dest: "{{ inventoryHome }}/lxcLocalInventory.sh"
+        owner: "{{ controllerUser }}"
+        group: "{{ controllerUser }}"
+        mode: 0744
+
+    - name: Add static route for LXC containers
+      shell: "ip route add {{ lxcSubnet }} via {{ lxcHostIp }}"
+      register: result
+      changed_when: result | succeeded
+      failed_when: no
+
+    - name: Add route in .profile
+      lineinfile: 
+        path: "{{ controllerHome }}/.profile"
+        regexp: "ip route add {{ lxcSubnet }}"
+        line: "sudo ip route add {{ lxcSubnet }} via {{ lxcHostIp }} || true" 
+
+    - name: Create dnsmasq lxc config file
+      copy:
+        content: ""
+        dest: /etc/dnsmasq.d/lxc
+        mode: 0644
+
+    - name: Configure dnsmasq to resolve .lxc domain
+      lineinfile:
+        dest: /etc/dnsmasq.d/lxc
+        regexp: "server="
+        line: "server=/lxc/{{ lxcHostIp }}"
+

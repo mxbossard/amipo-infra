@@ -1,0 +1,41 @@
+---
+
+- name: Reload dnsmasq config
+  shell: "/bin/bash -c 'kill -SIGHUP $(cat /var/run/lxc/dnsmasq.pid)'"
+  become: yes
+
+- name: Reload dnsmasq
+  service:
+    name: dnsmasq
+    status: reloaded
+  become: yes
+
+- name: Restart lxc container
+  shell: "lxc-stop -n {{ ctName }} || true ; lxc-start -n {{ ctName }}"
+  notify: Wait for ping
+  become: yes
+  become_user: "{{lxcUser}}"
+
+- name: Wait for ping
+  shell: "ping -c1 {{ ctName }}.lxc"
+  register: result
+  until: result | succeeded
+  retries: 20
+  delay: 1
+
+- name: Register container IP
+  shell: "lxc-info -n {{ctName}} -iH"
+  register: containerIpResult
+  until: containerIpResult.stdout != ''
+  retries: 60
+  delay: 1
+  failed_when: containerIpResult.stderr != '' or containerIpResult.stdout == ''
+  become: yes
+  become_user: "{{lxcUser}}"
+
+- set_fact: discoveredCtIp={{containerIpResult.stdout}}
+
+- debug: var=discoveredCtIp
+
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2
