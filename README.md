@@ -31,14 +31,15 @@ _Manual installation described in a further chapter_
 `ansible all -m ping`
 
 ## TODO Vagrant
-* Faire en sorte que le DNS de landrush soit resolue directement sur le host
-* Faire en sorte de resoudre les noms cours comme amipo1 plutot que amipo1.vagrant.test
+* Ameliorer le dialogue landrush/dnsmasq pour que amipo1.dev apparaisse automagiquement
+* Faire en sorte de resoudre les noms cours comme amipo1 plutot que amipo1.dev
 * Accelerer l'installation d'ansible dans la vm controller
 * Utiliser une cle ssh perso plutot que la cle insecure_private_key de vagrant ?
 
 
 ## TODO Ansible
 * Persister les regles iptables
+* Revoir l'idempotence de l'initialisation des CT
 * Fournir un conteneur Frontal nginx
 * Fournir un conteneur Accueil ssh (lobby)
 

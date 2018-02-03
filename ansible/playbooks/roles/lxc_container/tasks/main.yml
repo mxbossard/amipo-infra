@@ -78,14 +78,12 @@
   when: staticIpAvailable and ctIp is defined
   
 
-- name: Flush handlers
-  meta: flush_handlers
-
 # Use shell to interact with iptables because iptables modules is not idempotent
 - name: Remove previous iptables DNAT rules
   shell: "iptables -t nat -S PREROUTING | grep DNAT | grep -v '{{ discoveredCtIp }}' | cut -d' ' -f2- | while read rule; do deleteCmd=\"iptables -t nat -D $rule\"; echo $deleteCmd; /bin/sh -c \"$deleteCmd\"; done"
   register: result
   changed_when: result.stdout != ""
+  notify: Save iptables rules
   become: yes
 
 - name: Configure iptables to forward traffic
@@ -94,9 +92,11 @@
   changed_when: result.stdout == ""
   become: yes
   with_dict: "{{ ctPortsMapping }}"
+  notify: Save iptables rules
   when: ctPortsMapping is defined
 
-
+- name: Flush handlers
+  meta: flush_handlers
 
 - name: Add CT to inventory
   add_host:

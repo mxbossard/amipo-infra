@@ -12,7 +12,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Enable vagrant plugin landrush to help vagrant boxes dns to resolve box names
   config.landrush.enabled = true
-
+  config.landrush.tld = "dev";
+  config.landrush.guest_redirect_dns = true
 
   config.vm.provider "virtualbox" do |vb|
     # Use the NAT host DNS resolver to speed up internet connections
@@ -28,7 +29,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # VM of an AMIPO host managing LXC containers
   config.vm.define "amipo1" do |machine|
     #machine.vm.box = "debian/stretch64"
-    machine.vm.hostname = "amipo1.vagrant.test"
+    #machine.vm.hostname = "amipo1.vagrant.test"
+    machine.vm.hostname = "amipo1.dev"
     
     # Forward port if no private IP
     #machine.vm.network "forwarded_port", guest: 80, host: 8080
@@ -98,7 +100,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # VM of an AMIPO controller managing deployment.
   config.vm.define "controller" do |machine|
     #machine.vm.box = "ubuntu/xenial64"
-    machine.vm.hostname = "controller.vagrant.test"
+    #machine.vm.hostname = "controller.vagrant.test"
+    machine.vm.hostname = "controller.dev"
 
     # Define a private IP
     machine.vm.network :private_network, ip: "192.168.56.101"

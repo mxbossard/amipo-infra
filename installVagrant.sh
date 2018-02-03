@@ -77,6 +77,21 @@ install_vagrant_plugins() {
 	vagrant plugin install $VAGRANT_PLUGINS
 }
 
+configure_dnsmasq() {
+	if [ "$vagrantPackageType" = "deb" ]
+        then
+                dnsmasq -v || echo "Installing dnsmasq..."; sudo apt install gpgv
+        elif [ "$vagrantPackageType" = "rpm" ]
+        then
+                # FIXME is it the good package name ?
+                dnsmasq -v || echo "Installing dnsmasq..."; sudo yum install gpgv
+        fi
+
+	echo "server=/dev/127.0.0.1#10053" > /etc/dnsmasq.d/vagrant-landrush
+	
+	# Will not work everywhere !
+	sudo service dnsmasq restart
+}
 
 # Check vagrant version installed
 if [ "$(vagrant -v || echo 'Nope')" = "Vagrant $VAGRANT_VERSION" ]
@@ -90,3 +105,5 @@ fi
 # Try to install vagrant plugins
 install_vagrant_plugins
 
+# Install and configure dnsmasq
+configure_dnsmasq
