@@ -1,6 +1,6 @@
 #! /bin/sh
 
-scope="--local"
+scope="--global"
 
 # Productive alias
 git config $scope alias.s 'status'
