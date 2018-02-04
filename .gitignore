@@ -1,6 +1,8 @@
 .vagrant
 *.swp
+*.swo
 *.vdi
 *.retry
 *.log
 *.retry
+git

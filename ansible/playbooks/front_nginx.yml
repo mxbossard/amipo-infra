@@ -21,7 +21,7 @@
  
 
 - name: Setup front inside the CT
-  hosts: front
+  hosts: front.lxc
   become: yes
 
   tasks:
@@ -30,13 +30,93 @@
         name: "{{ item }}"
       with_items:
         - nginx
+        - git
+        - rsync
+        - openssl
+        - logrotate
+        
       notify: Reload nginx
+      tags: ["nginx"]
+
+    - name: Download certbot
+      get_url:
+        url: https://dl.eff.org/certbot-auto
+        dest: /root/certbot-auto
+        mode: 0744
+      tags: ["nginx"]
+
+    - name: Copy Amipo homepage
+      synchronize:
+        src: /vagrant/git/homepage-static/
+        dest: /var/www/amipo/homepage-static/
+      notify: Reload nginx
+      tags: ["nginx"]
+
+    - name: Grant execution to amipo homepage compilation script
+      file: 
+        path: "/var/www/amipo/homepage-static/renameStaticContentWithHash.sh"
+        mode: 0744
+
+    - name: Compile Amipo homepage
+      shell: "/bin/sh -c 'cd /var/www/amipo/homepage-static ./renameStaticContentWithHash.sh'"
+      tags: ["nginx"]
+
+    - name: Copy nginx config
+      synchronize:
+        src: /vagrant/git/front-nginx-config/
+        dest: /etc/nginx
+      notify: Reload nginx
+      tags: ["nginx"]
+
+    - name: Create config directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: nginx
+        group: nginx
+        mode: 0755
+        recurse: yes
+      with_items:
+        - /etc/nginx
+        - /etc/nginx/sites-available
+        - /etc/nginx/sites-enabled
+        - /var/www/
+        - /var/www/amipo
+        - /var/www/default
+        #- /etc/letsencrypt/live/amipo.fr
+
+      tags: ["nginx"]
+
+    - name: Generate dev self signed certificate
+      #shell: "certbot certonly --webroot -w /var/www/default/ -d amipo.fr -d www.amipo.fr -d pad.amipo.fr -d wiki.amipo.fr amipo1.dev"
+      shell: "mkdir -p /etc/letsencrypt/live/{{ item }}; openssl req -x509 -newkey rsa:1024 -keyout /etc/letsencrypt/live/{{ item }}/privkey.pem -out /etc/letsencrypt/live/{{ item }}/cert.pem -days 365 -nodes -subj '/CN=amipo1.dev'; cp /etc/letsencrypt/live/{{ item }}/cert.pem /etc/letsencrypt/live/{{ item }}/fullchain.pem; cp /etc/letsencrypt/live/{{ item }}/cert.pem /etc/letsencrypt/live/{{ item }}/chain.pem"
+      args:
+        creates: /etc/letsencrypt/live/{{ item }}/cert.pem
+      with_items:
+        - amipo.fr
+        - dev.lobotomie.org
+        - pad.lobotomie.org
+        - pad.chatons.lobotomie.org
+        - wiki.chatons.lobotomie.org
+        - all_amipo.fr
+
+      tags: ["nginx"]
+
+
+#    - name: Copy nginx config
+#      template:
+#        path: "{{ item }}"
+#      with_dict: {"nginx/nginx.conf", "/etc/nginx/nginx.conf"}
+#      tags: ["nginx"]
+   
 
     - name: Configure nginx service
       service:
         name: nginx
         enabled: yes
         state: started
+      tags: ["nginx"]
+
 
   handlers:
     - name: Reload nginx

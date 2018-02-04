@@ -15,6 +15,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.landrush.tld = "dev";
   config.landrush.guest_redirect_dns = true
 
+  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+
   config.vm.provider "virtualbox" do |vb|
     # Use the NAT host DNS resolver to speed up internet connections
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]

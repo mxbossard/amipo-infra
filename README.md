@@ -57,6 +57,15 @@ You should be able to ping amipo1.dev and controller.dev from your host computer
 * Fournir un conteneur Accueil ssh (lobby)
 
 
+## Idees pour le partage de config
+Tentative de partage de la config avec git.
+
+Utilisation des acl pour partager le repo git au groupe adm :
+sudo apk add acl
+sudo setfacl -R -m g:adm:rwX /etc/nginx
+sudo find /etc/nginx -type d -exec sudo setfacl -R -m d:g:adm:rwX {} \;
+
+
 ### Setup on debian like system
 _Download vagrant from https://www.vagrantup.com/downloads.html_
 
