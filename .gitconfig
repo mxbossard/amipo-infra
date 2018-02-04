@@ -1,0 +1,10 @@
+
+[diff]
+	# Config to enhance submodule integration in container
+	submodule = log
+
+[fetch]
+	recurseSubmodules = on-demand
+
+[status]
+	submoduleSummary = true
