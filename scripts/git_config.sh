@@ -21,6 +21,6 @@ git config $scope diff.submodule log
 git config $scope fetch.recurseSubmodules on-demand
 git config $scope status.submoduleSummary true
 
-git config $scope alias.spull '__git_spull() { git pull "$@" && git submodule sync --recursive && git submodule update --init --recursive; }; __git_spull'
+git config $scope alias.spull '!__git_spull() { git pull "$@" && git submodule sync --recursive && git submodule update --init --recursive --remote; }; __git_spull'
 git config $scope alias.spush 'push --recurse-submodules=on-demand'
 
