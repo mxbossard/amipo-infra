@@ -57,6 +57,11 @@ You should be able to ping amipo1.dev and controller.dev from your host computer
 * Fournir un conteneur Accueil ssh (lobby)
 
 
+## Some Documentation
+* <a href="https://help.ubuntu.com/lts/serverguide/lxc.html">Setup LXC</a>
+* <a href="https://stgraber.org/2014/01/17/lxc-1-0-unprivileged-containers/">Unprivileged LXC containers</a>
+
+
 ## Idees pour le partage de config
 Tentative de partage de la config avec git.
 
