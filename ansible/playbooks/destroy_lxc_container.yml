@@ -26,6 +26,14 @@
         removes: "{{ lxcContainerRepo }}/{{ ctName }}/config"
       become: yes
       become_user: "{{ lxcUser }}"
+
+    - name: Remove container groups from config file
+      lineinfile:
+        path: "{{ lxcAnsibleGroupsFile }}"
+        regexp: "^{{ ctName }}:"
+        state: absent
+      become: yes
+      become_user: "{{ lxcUser }}"
     
     - name: Remove files
       file:

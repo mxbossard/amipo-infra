@@ -33,7 +33,23 @@
     #directory: "{{lxcVolPath}}/{{ctName}}/rootfs"
     #fs_type: ext4
     #fs_size: 1G
-  notify: Wait for ping
+  notify: 
+    - Wait for ping
+  become: yes
+  become_user: "{{lxcUser}}"
+
+- name: Create container groups config file
+  file:
+    path: "{{ lxcAnsibleGroupsFile }}"
+    state: touch
+  become: yes
+  become_user: "{{lxcUser}}"
+
+- name: Add container groups in config file
+  lineinfile:
+    path: "{{ lxcAnsibleGroupsFile }}"
+    regexp: "^{{ ctName }}:"
+    line: "{{ ctName }}:lxc,{{ ctGroups | join(',') }}"
   become: yes
   become_user: "{{lxcUser}}"
 
@@ -83,7 +99,8 @@
   shell: "iptables -t nat -S PREROUTING | grep DNAT | grep -v '{{ discoveredCtIp }}' | cut -d' ' -f2- | while read rule; do deleteCmd=\"iptables -t nat -D $rule\"; echo $deleteCmd; /bin/sh -c \"$deleteCmd\"; done"
   register: result
   changed_when: result.stdout != ""
-  notify: Save iptables rules
+  notify: 
+    - Save iptables rules
   become: yes
 
 - name: Configure iptables to forward traffic
@@ -92,7 +109,8 @@
   changed_when: result.stdout == ""
   become: yes
   with_dict: "{{ ctPortsMapping }}"
-  notify: Save iptables rules
+  notify: 
+    - Save iptables rules
   when: ctPortsMapping is defined
 
 - name: Flush handlers

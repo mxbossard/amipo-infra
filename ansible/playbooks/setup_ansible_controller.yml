@@ -11,6 +11,7 @@
 
   vars:
     provisioningKeyFilepath: "{{ controllerHome }}/.ssh/provisioning_key"
+    hostSshDir: "{{ controllerHome }}/.host_ssh"
 
   tasks:
     - name: Install some packages
@@ -34,6 +35,11 @@
       args:
         creates: "{{ provisioningKeyFilepath }}"
       become_user: "{{ controllerUser }}"
+
+    - name: Copy host ssh config in .ssh controller dir
+      synchronize:
+        src: "{{ hostSshDir }}/"
+        dest: "{{ controllerHome }}/.ssh/"
 
     - name: Copy lxc inventory script
       template:

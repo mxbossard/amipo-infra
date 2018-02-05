@@ -13,6 +13,8 @@ vagrantSignature="vagrant_${VAGRANT_VERSION}_SHA256SUMS.sig"
 vagrantChecksum="vagrant_${VAGRANT_VERSION}_SHA256SUMS"
 vagrantBinary="vagrant_${VAGRANT_VERSION}_x86_64.$vagrantPackageType"
 
+localDir=".amipoLocal"
+
 usage() {
 	echo "usage: $0 package"
 	echo "where package is ether deb or rpm"
@@ -99,6 +101,12 @@ configure_dnsmasq() {
 	sudo service dnsmasq restart
 }
 
+build_local_env() {
+	test -d $localDir || mkdir $localDir
+	test -f $localDir/provisioning_key || ssh-keygen -f $localDir/provisioning_key -t rsa -b 4096
+
+}
+
 # Check vagrant version installed
 if [ "$(vagrant -v || echo 'Nope')" = "Vagrant $VAGRANT_VERSION" ]
 then
@@ -113,3 +121,7 @@ install_vagrant_plugins
 
 # Install and configure dnsmasq
 configure_dnsmasq
+
+# Build local env
+build_local_env
+

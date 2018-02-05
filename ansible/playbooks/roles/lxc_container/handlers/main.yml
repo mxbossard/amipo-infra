@@ -27,12 +27,12 @@
 - name: Save iptables rules
   shell: "iptables-save > /etc/iptables/rules.v4"
   args:
-    create: /etc/iptables/rules.v4
+    creates: /etc/iptables/rules.v4
   become: yes
 
 - name: Add CT to inventory
   add_host:
-    hostname: "{{ discoveredCtIp }}"
-    groups: "{{ ctGroups }}"
+    hostname: "{{ ctName }}.lxc"
+    groups: "lxc,{{ ctGroups | join(',') }}"
 
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

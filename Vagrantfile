@@ -7,6 +7,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.insert_key = false
   #config.ssh.private_key_path = "ansible/.ssh/vagrant_ssh_key"
 
+  # Enable ssh agent forwarding
+  config.ssh.forward_agent = true
+
   config.vm.box = "ubuntu/xenial64"
   #config.vm.box = "debian/stretch64"
 
@@ -15,7 +18,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.landrush.tld = "dev";
   config.landrush.guest_redirect_dns = true
 
-  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+  #config.vm.synced_folder ".", "/vagrant", type: "rsync"
 
   config.vm.provider "virtualbox" do |vb|
     # Use the NAT host DNS resolver to speed up internet connections
@@ -30,6 +33,36 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.customize ["modifyvm", :id, "--memory", 512]
   end
 
+  # VM of an AMIPO controller managing deployment.
+  config.vm.define "controller" do |machine|
+    machine.vm.hostname = "controller.dev"
+
+    # Define a private IP
+    machine.vm.network :private_network, ip: "192.168.56.101"
+
+    # Mount vagrant dir to vagrant home
+    machine.vm.synced_folder "./ansible", "/home/vagrant/ansible"
+
+    # Copy insecure_private_key in controller guest for ansible usage
+    machine.vm.synced_folder "#{Dir.home}/.vagrant.d", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{Dir.home}/.vagrant.d/insecure_private_key"]
+    machine.vm.synced_folder "#{Dir.home}/.ssh", "/home/vagrant/.host_ssh/", type: "rsync"
+
+    machine.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", 256]
+    end
+
+    # Run Ansible from the Vagrant VM
+    machine.vm.provision "ansible_local" do |ansible|
+      ansible.install_mode = "pip"
+      ansible.verbose = true
+      ansible.compatibility_mode = "2.0"
+      ansible.provisioning_path = "/home/vagrant/ansible"
+      ansible.config_file = "ansible.cfg"
+      ansible.inventory_path = "inventory"
+      ansible.playbook = "playbooks/setup_ansible_controller.yml"
+      ansible.limit = "all"
+    end
+  end
 
   # VM of an AMIPO host managing LXC containers
   config.vm.define "amipo1" do |machine|
@@ -60,39 +93,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Run script to increase swap memory
     #machine.vm.provision "shell", path: "increase_swap.sh"
 
-    # Install python 2.7
-    machine.vm.provision "shell", inline: "sudo apt install -y python2.7; test -f /usr/bin/python || ln -s /usr/bin/python2.7 /usr/bin/python"
+    # Bootstrap ansible in box
+    machine.vm.provision "shell", path: "scripts/bootstrap_ansible.sh"
+    #machine.vm.provision "shell", inline: "sudo apt install -y python2.7; test -f /usr/bin/python || ln -s /usr/bin/python2.7 /usr/bin/python"
 
-  end
-
-  # VM of an AMIPO controller managing deployment.
-  config.vm.define "controller" do |machine|
-    machine.vm.hostname = "controller.dev"
-
-    # Define a private IP
-    machine.vm.network :private_network, ip: "192.168.56.101"
-
-    # Mount vagrant dir to vagrant home
-    machine.vm.synced_folder "./ansible", "/home/vagrant/ansible"
-
-    # Copy insecure_private_key in controller guest for ansible usage
-    machine.vm.synced_folder "#{Dir.home}/.vagrant.d", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{Dir.home}/.vagrant.d/insecure_private_key"]
-
-    machine.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", 256]
-    end
-
-    # Run Ansible from the Vagrant VM
-    machine.vm.provision "ansible_local" do |ansible|
-      ansible.install_mode = "pip"
+    machine.vm.provision "ansible" do |ansible|
+      ansible.playbook_command = "scripts/ansible-playbook"
+      ansible.playbook = "ansible/playbooks/provision_amipo_test.yml"
       ansible.verbose = true
-      ansible.compatibility_mode = "2.0"
-      ansible.provisioning_path = "/home/vagrant/ansible"
-      ansible.config_file = "ansible.cfg"
-      ansible.inventory_path = "inventory"
-      ansible.playbook = "playbooks/provision_amipo_test.yml"
       ansible.limit = "all"
     end
+
   end
+
 
 end

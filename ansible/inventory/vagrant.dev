@@ -1,7 +1,7 @@
 controller.dev	ansible_user=vagrant ansible_private_key_file=~/.vagrantSsh/insecure_private_key
-amipo1.dev		ansible_user=vagrant ansible_private_key_file=~/.vagrantSsh/insecure_private_key
+amipo1.dev	ansible_user=vagrant ansible_private_key_file=~/.vagrantSsh/insecure_private_key
 
-[tests]
+[devs]
 controller.dev
 amipo1.dev
 

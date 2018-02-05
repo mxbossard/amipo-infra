@@ -14,15 +14,20 @@
     - role: lxc_container
       distribName: alpine
       ctName: front
-      ctGroups: [ front, nginx ] 
+      ctGroups: [ "front", "nginx" ] 
       ctPortsMapping: {80: 80, 443: 443}
 
   tasks:
  
 
 - name: Setup front inside the CT
-  hosts: front.lxc
+  hosts: nginx
   become: yes
+
+  vars_files:
+    - config-global.yml
+    - "{{ configHome }}/config-{{ envName }}.yml"
+    - "{{ configHome }}/lxc.yml"
 
   tasks:
     - name: Install nginx and dependencies
@@ -38,6 +43,21 @@
       notify: Reload nginx
       tags: ["nginx"]
 
+    - name: Create config directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: nginx
+        group: nginx
+        mode: u=rwX,g=rX,o=rX
+      with_items:
+        - /etc/nginx
+        - /etc/nginx/sites-available
+        - /etc/nginx/sites-enabled
+        - /var/www/
+        - /var/www/amipo
+      tags: ["nginx"]
+
     - name: Download certbot
       get_url:
         url: https://dl.eff.org/certbot-auto
@@ -45,9 +65,25 @@
         mode: 0744
       tags: ["nginx"]
 
+    - name: Checkout git submodules
+      local_action:
+        module: "shell cd /vagrant/submodules; git submodule update --init --remote --recursive {{ item }}; cd {{ item }}; git checkout master"
+        #args:
+          #creates: /vagrant/submodules/{{ item }}/.git
+      become_user: "{{ controllerUser }}"
+      register: git_result
+      failed_when: git_result | failed
+      with_items:
+        - homepage-static
+        - front-nginx-config
+      tags: ["nginx"]
+
+    - debug: var=git_result
+      tags: ["nginx"]
+
     - name: Copy Amipo homepage
       synchronize:
-        src: /vagrant/git/homepage-static/
+        src: /vagrant/submodules/homepage-static/
         dest: /var/www/amipo/homepage-static/
       notify: Reload nginx
       tags: ["nginx"]
@@ -56,6 +92,7 @@
       file: 
         path: "/var/www/amipo/homepage-static/renameStaticContentWithHash.sh"
         mode: 0744
+      tags: ["nginx"]
 
     - name: Compile Amipo homepage
       shell: "/bin/sh -c 'cd /var/www/amipo/homepage-static ./renameStaticContentWithHash.sh'"
@@ -63,23 +100,25 @@
 
     - name: Copy nginx config
       synchronize:
-        src: /vagrant/git/front-nginx-config/
+        src: /vagrant/submodules/front-nginx-config/
         dest: /etc/nginx
       notify: Reload nginx
       tags: ["nginx"]
 
-    - name: Create config directories
+    - name: Config directories perms
       file:
         path: "{{ item }}"
         state: directory
         owner: nginx
         group: nginx
-        mode: 0755
-        recurse: yes
+        mode: u=rwX,g=rX,o=rX
+        recurse: no
+        follow: no
       with_items:
         - /etc/nginx
+        - /etc/nginx/conf.d
         - /etc/nginx/sites-available
-        - /etc/nginx/sites-enabled
+        #- /etc/nginx/sites-enabled
         - /var/www/
         - /var/www/amipo
         - /var/www/default
@@ -115,6 +154,25 @@
         name: nginx
         enabled: yes
         state: started
+      tags: ["nginx"]
+
+    - name: Flush handlers
+      meta: flush_handlers
+
+    - name: Wait for frontal to be up
+      local_action:
+        module: get_url
+        url: https://amipo1.dev
+        dest: /dev/null
+        validate_certs: no
+        force: yes
+      register: result
+      until: result.status_code == 200 
+      retries: 60
+      delay: 1
+      tags: ["nginx"]
+
+    - debug: var=result
       tags: ["nginx"]
 
 

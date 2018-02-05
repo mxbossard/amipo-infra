@@ -183,6 +183,13 @@
         group: "{{lxcUser}}"
         mode: 0744
 
+    - name: Create container groups config file
+      file:
+        path: "{{ lxcAnsibleGroupsFile }}"
+        state: touch
+      become: yes
+      become_user: "{{lxcUser}}"
+
 
 
   handlers:
