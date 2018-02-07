@@ -1,10 +1,19 @@
 AMIPO Infrastructure's code
 =======
 
+## Firstly, you need read access on our framagit.org git repositories
+For now, you need read access on our fgramagit.org group.
+You request an access to our repositories here: <a href="https://framagit.org/groups/amipo/-/group_members/request_access">https://framagit.org/groups/amipo/-/group_members/request_access</a>.
+Then you need to have one of you ssh keys without passphrase installed into your framagit.org account.
+You can generate a key like this: `ssh-keygen -b 4096 -t rsa -f ~/.ssh/amipo_git_key -q -N ""`.
+Then you can install your key by copy pasting the content of the public certificate (~/.ssh/amipo_git_key.pub) into the framagit.irg interface available here: <a href="https://framagit.org/profile/keys">https://framagit.org/profile/keys</a>.
+
+Our framagit.org dev group can be found here: <a href="https://framagit.org/amipo">https://framagit.org/amipo</a>.
+
 ## We use vagrant
 Vagrant allow us to share our working environment easily and quickly.
 Vagrant will create some Virtual Machines on your computer and emulate real production servers.
-We call this VMs our test environment.
+We call this VMs our dev environment.
 
 ### Vagrant plugin used
 * landrush: a DNS to manage box names
@@ -13,7 +22,7 @@ We call this VMs our test environment.
 ## "Easy" setup
 
 ### Clone of the project
-`git clone git@github.com:mxbossard/amipo-infra.git`
+`git clone https://github.com/mxbossard/amipo-infra.git
 
 `cd amipo-infra`
 
@@ -44,17 +53,37 @@ The additional drive on which are installed LXC containers can be removed too. I
 ### Unable to resolve vagrant box names
 You should be able to ping amipo1.dev and controller.dev from your host computer. If not dnsmasq is probably badly configured. You could try a `sudo service dnsmasq restart`.
 
+## User Guide
+This infra code is responsible to setup the infrastructure.
+
+## Open questions
+* Couple or not container creation to container configuration ? => Better not. It should exists some playbooks building containers, then others deploying softwares on this containers.
+* How to differentiate environments (ex: ssl in dev and prod env) ? => With dedicated playbooks, we can create containers slithly deferently for each env.
+* How to manage secrets ?
+
+## TODO
+* Migrate this repo from github.io to framagit.org
+
+
 ## TODO Vagrant
 * Accelerer l'installation d'ansible dans la vm controller
-* Etudier la possibilité de provisionner avec ansible chaqhue vagrant box independament en passant par le controller
+* Etudier la possibilité de provisionner avec ansible chaque vagrant box independament en passant par le controller
 * Utiliser une cle ssh perso plutot que la cle insecure_private_key de vagrant ?
 
 
 ## TODO Ansible
-* Persister les regles iptables
+* Découpler la création des conteneur de la configuration des conteneurs.
+* Créer un playbooks de creation de l'infra: It should ping for each needed containers, then start or create needed ones. It should expose a mean to build only few containers.
 * Revoir l'idempotence de l'initialisation des CT
-* Fournir un conteneur Frontal nginx
-* Fournir un conteneur Accueil ssh (lobby)
+* Configurer les CT pour monter des repertoires du host dans les conteneurs.
+* Fournir un conteneur Frontal nginx prod ready
+* Fournir un conteneur Accueil ssh (lobby) prod ready
+* Pour le moment, l'utilsateur a besoin d'avoir les access au framagit Amipo pour créer le frontal. Il faudrait voir si on peut faire mieux. Pour le moment c'est impossible, car le repo de la config nginx est privé. Quand il sera public, on devrait pouvoir contourner le problème avec un checkout du projet via le protocol https si l'utilisateur ne possede pas de compte chez framagit.
+
+
+## TODO Frontal
+* Fournir un SSL AC de dev qui pourra etre installer sur les postes de dev, et signer les certificats de dev du frontal.
+* Monter des repertoires (log, ssl certs, ...) du host lxc dans le conteneur.
 
 
 ## Some Documentation
