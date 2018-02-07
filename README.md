@@ -21,8 +21,8 @@ We call this VMs our dev environment.
 
 ## "Easy" setup
 
-### Clone of the project
-`git clone https://github.com/mxbossard/amipo-infra.git
+### Clone the project
+`git clone git@framagit.org:amipo/amipo-infra.git` 
 
 `cd amipo-infra`
 
