@@ -73,7 +73,7 @@ This infra code is responsible to setup the infrastructure.
 
 ## TODO Ansible
 * Découpler la création des conteneur de la configuration des conteneurs.
-* Créer un playbooks de creation de l'infra: It should ping for each needed containers, then start or create needed ones. It should expose a mean to build only few containers.
+* Créer un playbooks de creation de l'infra: It should ping for each needed containers, then start or create needed ones. It should expose a mean to build only few containers. Idées: pour chaque env on liste les CT (avec la distrib et la config du CT si besoin groups, volumes,... ?) Lorsque je lance un playbook sur le group frontal, ansible check si tous les CT de la liste sont up and running avant de jouer le playbook.
 * Revoir l'idempotence de l'initialisation des CT
 * Configurer les CT pour monter des repertoires du host dans les conteneurs.
 * Fournir un conteneur Frontal nginx prod ready
