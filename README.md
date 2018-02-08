@@ -1,11 +1,9 @@
 AMIPO Infrastructure's code
 =======
 
-## Firstly, you need read access on our framagit.org git repositories
-For now, you need read access on our fgramagit.org group.
-You request an access to our repositories here: <a href="https://framagit.org/groups/amipo/-/group_members/request_access">https://framagit.org/groups/amipo/-/group_members/request_access</a>.
-Then you need to have one of you ssh keys without passphrase installed into your framagit.org account.
-You can generate a key like this: `ssh-keygen -b 4096 -t rsa -f ~/.ssh/amipo_git_key -q -N ""`.
+## Firstly, you need a framagit.org account preferencially with an ssh key
+For now, you need an ssh access on framagit.org.
+You can generate a ssh key like this: `ssh-keygen -b 4096 -t rsa -f ~/.ssh/amipo_git_key -q -N ""`.
 Then you can install your key by copy pasting the content of the public certificate (~/.ssh/amipo_git_key.pub) into the framagit.irg interface available here: <a href="https://framagit.org/profile/keys">https://framagit.org/profile/keys</a>.
 
 Our framagit.org dev group can be found here: <a href="https://framagit.org/amipo">https://framagit.org/amipo</a>.
@@ -98,6 +96,13 @@ Utilisation des acl pour partager le repo git au groupe adm :
 sudo apk add acl
 sudo setfacl -R -m g:adm:rwX /etc/nginx
 sudo find /etc/nginx -type d -exec sudo setfacl -R -m d:g:adm:rwX {} \;
+
+## Reflexions / Notes
+
+### Pour delayer la création des CT à la demande lors du lancement des playbooks
+* Construire un inventory ansible complet. Lorsqu'on lance un playbook, un hook (?) s'occupe de faire en sorte que tous les CT existent, ont la bonne config (distrib, version, ...) et soient démarrés. Le hic c'est que cela peut faire doublon avec l'inventaire dynamic basé sur lxc-ls, il faut vérifier que ce ne soit pas incompatible. => Ca à l'air compatible, je pars la dessus.
+
+* Décrire l'infra dans un fichier de config. Construire un playbook qui determine la liste des CT cible en fonction du fichier de config, puis verifie leur existance, ...
 
 
 ### Setup on debian like system
