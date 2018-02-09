@@ -1,4 +1,4 @@
-#! /bin/sh 
+#! /bin/sh -e
 
 # Setup script for Vagrant + virtualbox. Tested on deb systems not rpm ones. 	
 
@@ -13,7 +13,7 @@ vagrantSignature="vagrant_${VAGRANT_VERSION}_SHA256SUMS.sig"
 vagrantChecksum="vagrant_${VAGRANT_VERSION}_SHA256SUMS"
 vagrantBinary="vagrant_${VAGRANT_VERSION}_x86_64.$vagrantPackageType"
 
-localDir=".amipoLocal"
+localDir="$(dirname $(readlink -f $0))/.amipoLocal"
 
 usage() {
 	echo "usage: $0 package"
@@ -26,10 +26,45 @@ then
 	usage
 fi
 
+disclaimer() {
+	echo "This script is a helper to install vagrant on your computer. It requires some other programs and will try to install them. YOU NEED MULTIVERSE REPOSITORIES for this install to works. Plus this script is an alpha and may not work on your linux distribution, help us to improve it."
+    	read -p "Do you wish to continue and try to install required programs ? [y/N] " yn
+    	case $yn in
+		[Yy]* ) break;;
+		* ) exit;;
+	esac
+}
+
 # Generate personal ssh keys for vagrant VMs
 #yes | ssh-keygen -b 4096 -t rsa -f ansible/.ssh/vagrant_ssh_key -q -N ""
 
+install_packages() {
+	pkgs="$@"
+
+	if [ "$vagrantPackageType" = "deb" ]
+	then
+		# debian system
+		sudo apt update -y --force-yes
+		sudo apt install -y --force-yes $pkgs
+	elif [ "$vagrantPackageType" = "rpm" ]
+	then
+		# redhat system
+		# FIXME are they the good packages names ?
+		sudo yum update -y
+		sudo yum install -y $pkgs
+	fi
+}
+
 install_vagrant() {
+	# Check vagrant version installed
+	if [ "$(vagrant -v || echo 'Nope')" = "Vagrant $VAGRANT_VERSION" ]
+	then
+		echo "Vagrant $VAGRANT_VERSION already installed."
+		return
+	else
+		echo "Installing Vagrant..."
+	fi
+
 	tmpDir="$(mktemp -d /tmp/vagrant.XXXXXXXXXX)"
 	cd $tmpDir
 	for file in $vagrantSignature $vagrantChecksum $vagrantBinary
@@ -37,15 +72,6 @@ install_vagrant() {
 		echo "Downloading of $vagrantBaseUrl/$file ..."
 		curl -OS "$vagrantBaseUrl/$file"
 	done
-
-	if [ "$vagrantPackageType" = "deb" ]
-	then
-		sudo apt install gpgv
-	elif [ "$vagrantPackageType" = "rpm" ]
-	then
-		# FIXME is it the good package name ?
-		sudo yum install gpgv
-	fi
 
 	echo "Verifying Vagrant checksum..."
 
@@ -58,8 +84,20 @@ install_vagrant() {
 	# Verify the SHASUM matches the binary.
 	grep "$vagrantBinary" $vagrantChecksum | shasum -a 256 -c
 
-	echo "Installing Vagrant and VirtualBox..."
+	if [ "$vagrantPackageType" = "deb" ]
+	then
+		sudo dpkg -i $vagrantBinary
+	elif [ "$vagrantPackageType" = "rpm" ]
+	then
+		sudo rpm -ivh $vagrantBinary
+	fi
 
+	rm -- $tmpDir/$vagrantSignature $tmpDir/$vagrantChecksum $tmpDir/$vagrantBinary
+	rmdir -- $tmpDir
+}
+
+install_required_packages() {
+	echo "Installing Vagrant and VirtualBox..."
 	if [ "$vagrantPackageType" = "deb" ]
 	then
 		sudo dpkg -i $vagrantBinary
@@ -70,9 +108,6 @@ install_vagrant() {
 		# FIXME are they the good packages names ?
 		sudo yum install -y virtualbox-dkms virtualbox
 	fi
-
-	rm -- $tmpDir/$vagrantSignature $tmpDir/$vagrantChecksum $tmpDir/$vagrantBinary
-	rmdir -- $tmpDir
 }
 
 install_vagrant_plugins() {
@@ -86,19 +121,11 @@ install_vagrant_plugins() {
 }
 
 configure_dnsmasq() {
-	if [ "$vagrantPackageType" = "deb" ]
-        then
-                dnsmasq -v || echo "Installing dnsmasq..."; sudo apt install dnsmasq
-        elif [ "$vagrantPackageType" = "rpm" ]
-        then
-                # FIXME is it the good package name ?
-                dnsmasq -v || echo "Installing dnsmasq..."; sudo yum install dnsmasq
-        fi
+	dnsmasq -v || echo "Installing dnsmasq..." && install_packages dnsmasq 
 
-	sudo /bin/sh -c 'echo "server=/dev/127.0.0.1#10053" > /etc/dnsmasq.d/vagrant-landrush'
-	
 	# Will not work everywhere !
-	sudo service dnsmasq restart
+	dnsConfFile="/etc/dnsmasq.d/vagrant-landrush"
+	test -f $dnsConfFile || sudo /bin/sh -c "echo 'server=/dev/127.0.0.1#10053' > $dnsConfFile" && sudo service dnsmasq restart
 }
 
 build_local_env() {
@@ -107,14 +134,15 @@ build_local_env() {
 
 }
 
-# Check vagrant version installed
-if [ "$(vagrant -v || echo 'Nope')" = "Vagrant $VAGRANT_VERSION" ]
-then
-	echo "Vagrant $VAGRANT_VERSION already installed."
-else
-	echo "Installing Vagrant..."
-	install_vagrant
-fi
+
+# Display disclaimer
+disclaimer
+
+# Install required packages
+install_packages curl gpgv virtualbox
+
+# Try to install vagrant
+install_vagrant
 
 # Try to install vagrant plugins
 install_vagrant_plugins
