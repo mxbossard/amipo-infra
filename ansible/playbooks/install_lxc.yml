@@ -159,9 +159,9 @@
       notify:
         - Restart lxc-net
 
-    - name: Configure LXC dnsmasq to resolve .lxc domain
+    - name: Configure lxc-net to resolve .lxc domain
       lineinfile:
-        dest: /etc/default/lxc
+        dest: /etc/default/lxc-net
         regexp: "LXC_DOMAIN="
         line: 'LXC_DOMAIN="lxc"'
       notify:
@@ -184,9 +184,10 @@
         mode: 0744
 
     - name: Create container groups config file
-      file:
-        path: "{{ lxcAnsibleGroupsFile }}"
-        state: touch
+      copy:
+        content: ""
+        dest: "{{ lxcAnsibleGroupsFile }}"
+        force: no
       become: yes
       become_user: "{{lxcUser}}"
 
@@ -198,6 +199,8 @@
       service:
         name: lxc-net
         state: restarted
+      notify:
+        - Restart dnsmasq
 
     - name: Restart dnsmasq
       service:
