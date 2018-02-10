@@ -16,29 +16,33 @@
     - name: Remove dnsmasq config
       lineinfile:
         path: /etc/lxc/dnsmasq-hosts.conf
-        regexp: "^{{ ctName }}"
+        regexp: "^{{ item }}"
         state: absent
       become: yes
+      with_items: "{{ ctName.split(' ') }}"
     
-    - name: Destroy container named {{ ctName }}
-      shell: "lxc-stop -n {{ ctName }} || true; lxc-destroy -n {{ ctName }} || true"
+    - name: Destroy container
+      shell: "lxc-stop -n {{ item }} || true; lxc-destroy -n {{ item }} || true"
       args:
-        removes: "{{ lxcContainerRepo }}/{{ ctName }}/config"
+        removes: "{{ lxcContainerRepo }}/{{ item }}/config"
       become: yes
       become_user: "{{ lxcUser }}"
+      with_items: "{{ ctName.split(' ') }}"
 
     - name: Remove container groups from config file
       lineinfile:
         path: "{{ lxcAnsibleGroupsFile }}"
-        regexp: "^{{ ctName }}:"
+        regexp: "^{{ item }}:"
         state: absent
       become: yes
       become_user: "{{ lxcUser }}"
+      with_items: "{{ ctName.split(' ') }}"
     
     - name: Remove files
       file:
-        path: "{{ lxcContainerRepo }}/{{ ctName }}"
+        path: "{{ lxcContainerRepo }}/{{ item }}"
         state: absent
       become: yes
+      with_items: "{{ ctName.split(' ') }}"
 
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2
