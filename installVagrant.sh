@@ -4,7 +4,7 @@
 
 # Config
 VAGRANT_REPO_URL="https://releases.hashicorp.com/vagrant"
-VAGRANT_VERSION="2.0.1"
+VAGRANT_VERSION="2.0.2"
 VAGRANT_PLUGINS="landrush vagrant-persistent-storage"
 
 vagrantPackageType="$1" # ether dep or rpm
@@ -13,7 +13,8 @@ vagrantSignature="vagrant_${VAGRANT_VERSION}_SHA256SUMS.sig"
 vagrantChecksum="vagrant_${VAGRANT_VERSION}_SHA256SUMS"
 vagrantBinary="vagrant_${VAGRANT_VERSION}_x86_64.$vagrantPackageType"
 
-localDir="$(dirname $(readlink -f $0))/.amipoLocal"
+projectDir="$(dirname $(readlink -f $0))"
+localDir="$projectDir/.amipoLocal"
 
 usage() {
 	echo "usage: $0 package"
@@ -70,13 +71,13 @@ install_vagrant() {
 	for file in $vagrantSignature $vagrantChecksum $vagrantBinary
 	do
 		echo "Downloading of $vagrantBaseUrl/$file ..."
-		curl -OS "$vagrantBaseUrl/$file"
+		test -f $file || curl -OS "$vagrantBaseUrl/$file"
 	done
 
 	echo "Verifying Vagrant checksum..."
 
 	# Import hashicorp gpg public key
-	gpg --import hashicorp.asc
+	gpg --import $projectDir/hashicorp.asc
 
 	# Verify the signature file is untampered.
 	gpg --verify $vagrantSignature $vagrantChecksum
@@ -94,6 +95,8 @@ install_vagrant() {
 
 	rm -- $tmpDir/$vagrantSignature $tmpDir/$vagrantChecksum $tmpDir/$vagrantBinary
 	rmdir -- $tmpDir
+
+	vagrant plugin expunge --reinstall
 }
 
 install_required_packages() {
