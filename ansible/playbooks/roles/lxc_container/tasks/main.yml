@@ -1,13 +1,11 @@
 ---
 
 - name: Generate deterministic mac address
-  shell: "/bin/sh -c echo '{{ ctName }}' | sha1sum | sed -re 's/(..)(..)(..)(..).*/00:ff:\\1:\\2:\\3:\\4/'"
-  register: result
-  changed_when: no
-
-- set_fact: 
+  set_fact: 
     staticIpAvailable: true
-    ctDeterministicMacAddress: "{{result.stdout}}"
+    ctDeterministicMacAddress: "{{ ctName | hash('sha1') | regex_replace('^(..)(..)(..)(..).*', '00:ff:\\1:\\2:\\3:\\4') }}"
+
+- debug: var=ctDeterministicMacAddress
 
 - name: Create lxc specific config file
   template:

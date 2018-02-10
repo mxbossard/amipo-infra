@@ -3,12 +3,14 @@
 - name: Reload dnsmasq config
   shell: "/bin/bash -c 'kill -SIGHUP $(cat /var/run/lxc/dnsmasq.pid)'"
   become: yes
+  become_user: root
 
-- name: Reload dnsmasq
-  service:
-    name: dnsmasq
-    status: reloaded
-  become: yes
+#- name: Reload dnsmasq config
+#  service:
+#    name: dnsmasq
+#    state: reloaded
+#  become: yes
+#  become_user: root
 
 - name: Restart lxc container
   shell: "lxc-stop -n {{ ctName }} || true ; lxc-start -n {{ ctName }}"
@@ -29,6 +31,7 @@
   args:
     creates: /etc/iptables/rules.v4
   become: yes
+  become_user: root
 
 - name: Add CT to inventory
   add_host:
