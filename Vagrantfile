@@ -20,6 +20,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   #config.vm.synced_folder ".", "/vagrant", type: "rsync"
 
+  # Config proxy if a proxy is used
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    config.proxy.http     = "http://192.168.56.1:3128/"
+    config.proxy.https    = "http://192.168.56.1:3128/"
+    config.proxy.no_proxy = "localhost,127.0.0.1,.dev,.lxc"
+  end
+
   config.vm.provider "virtualbox" do |vb|
     # Use the NAT host DNS resolver to speed up internet connections
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
