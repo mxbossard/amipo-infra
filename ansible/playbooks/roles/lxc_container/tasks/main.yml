@@ -10,22 +10,22 @@
 - name: Create lxc specific config file
   template:
     src: lxc-container.conf.j2
-    dest: "{{tmpLxcConfigFile}}"
-    owner: "{{lxcUser}}"
-    group: "{{lxcUser}}"
+    dest: "{{ tmpLxcConfigFile }}"
+    owner: "{{ lxcUser }}"
+    group: "{{ lxcUser }}"
     mode: 0400
   become: yes
 
-- name: Create new container named {{ctName}} and start it
+- name: Create new container named {{ ctName }} and start it
   lxc_container:
-    name: "{{ctName}}"
-    config: "{{tmpLxcConfigFile}}"
+    name: "{{ ctName }}"
+    config: "{{ tmpLxcConfigFile }}"
     backing_store: dir
     container_log: true
     container_log_level: DEBUG
     state: started
     template: download
-    template_options: --dist {{distribName}} --release {{distribRelease}} --arch amd64
+    template_options: --dist {{ distribName }} --release {{ distribRelease }} --arch amd64
     #template_options: --dist ubuntu --release xenial --arch amd64
     #lxc_path: "{{lxcVolPath}}"
     #directory: "{{lxcVolPath}}/{{ctName}}/rootfs"
@@ -34,38 +34,56 @@
   notify: 
     - Wait for ping
   become: yes
-  become_user: "{{lxcUser}}"
+  become_user: "{{ lxcUser }}"
 
 - name: Create container groups config file
   file:
     path: "{{ lxcAnsibleGroupsFile }}"
     state: touch
   become: yes
-  become_user: "{{lxcUser}}"
-
-- name: Add container groups in config file
-  lineinfile:
-    path: "{{ lxcAnsibleGroupsFile }}"
-    regexp: "^{{ ctName }}:"
-    line: "{{ ctName }}:lxc,{{ ctGroups | join(',') }}"
-  become: yes
-  become_user: "{{lxcUser}}"
+  become_user: "{{ lxcUser }}"
 
 - name: Remove lxc config file
   file:
-    path: "{{tmpLxcConfigFile}}"
+    path: "{{ tmpLxcConfigFile }}"
     state: absent
   become: yes
 
 - name: Initialize Alpine container
-  shell: "lxc-attach -n {{ctName}} --clear-env -e -- /bin/sh -c 'su -; apk update; apk upgrade; apk add openssh python2 sudo; adduser -D {{provisioningUser}} || true; passwd -u {{provisioningUser}}; echo \"manager ALL=(ALL) NOPASSWD:ALL\" > /etc/sudoers.d/manager; mkdir /home/{{provisioningUser}}/.ssh || true; echo \"{{provisioningPubKey}}\" > /home/{{provisioningUser}}/.ssh/authorized_keys; chown -R {{provisioningUser}}:{{provisioningUser}} /home/{{provisioningUser}}; chmod 700 /home/{{provisioningUser}}/.ssh; chmod 600 /home/{{provisioningUser}}/.ssh/authorized_keys; rc-update add sshd; /etc/init.d/sshd start'"
+  shell: "lxc-attach -n {{ ctName }} --clear-env -e -- /bin/sh -c 'su -; udchpd -R; {{ proxyConfig }} apk update -q; apk upgrade -q; apk add -q openssh python2 sudo; id {{ provisioningUser }} || adduser -D {{ provisioningUser }}; rc-update add sshd; /etc/init.d/sshd start'"
   register: ctInitMsg
   #failed_when: ctInitMsg.stderr != ''
   until:  ctInitMsg | succeeded
   become: yes
-  become_user: "{{lxcUser}}"
-  retries: 10
+  become_user: "{{ lxcUser }}"
+  retries: 2
   delay: 3
+  when: distribName == "alpine"
+  tags: init
+
+- name: Initialize Debian container
+  shell: "lxc-attach -n {{ ctName }} --clear-env -e -- /bin/sh -c 'su -; ip addr show | grep 10.0.3.0 && ip addr del 10.0.3.0 dev eth0 && dhclient -r; sleep 1 && dhclient; {{ proxyConfig }} apt update -q -y --force-yes; apt upgrade -q -y --force-yes; apt install -q -y --force-yes ssh python2.7 sudo; test -f /usr/bin/python || ln -s /usr/bin/python2.7 /usr/bin/python; id {{ provisioningUser }} || adduser --disabled-password {{ provisioningUser }}; update-rc.d ssh defaults; /etc/init.d/ssh start'"
+  register: ctInitMsg
+  #failed_when: ctInitMsg.stderr != ''
+  until:  ctInitMsg | succeeded
+  become: yes
+  become_user: "{{ lxcUser }}"
+  retries: 2
+  delay: 3
+  when: distribName == "debian" or distribName == "ubuntu"
+  tags: init
+
+- name: Initialize container
+  shell: "lxc-attach -n {{ ctName }} --clear-env -e -- /bin/sh -c 'su -; passwd -u {{ provisioningUser }}; echo \"manager ALL=(ALL) NOPASSWD:ALL\" > /etc/sudoers.d/manager; test -d /home/{{ provisioningUser }}/.ssh || mkdir /home/{{ provisioningUser }}/.ssh; echo \"{{ provisioningPubKey }}\" > /home/{{ provisioningUser }}/.ssh/authorized_keys; chown -R {{ provisioningUser }}:{{ provisioningUser }} /home/{{ provisioningUser }}; chmod 700 /home/{{ provisioningUser }}/.ssh; chmod 600 /home/{{ provisioningUser }}/.ssh/authorized_keys;'"
+  register: ctInitMsg
+  #failed_when: ctInitMsg.stderr != ''
+  until:  ctInitMsg | succeeded
+  become: yes
+  become_user: "{{ lxcUser }}"
+  retries: 2
+  delay: 3
+  when: distribName == "debian" or distribName == "ubuntu" or distribName == "alpine"
+  tags: init
 
 - name: Discover CT IP
   import_tasks: discover_ct_ip.yml
@@ -73,8 +91,8 @@
 - name: Config dnsmasq to fix container IP
   lineinfile:
     path: /etc/lxc/dnsmasq-hosts.conf
-    regexp: "^{{ctName}}"
-    line: "{{ctName}},{{discoveredCtIp}}"
+    regexp: "^{{ ctName }}"
+    line: "{{ ctName }},{{ discoveredCtIp }}"
   become: yes
   notify:
     - Reload dnsmasq config
@@ -91,6 +109,14 @@
     - Restart lxc container
   when: staticIpAvailable and ctIp is defined
   
+- name: Add container groups in config file
+  lineinfile:
+    path: "{{ lxcAnsibleGroupsFile }}"
+    regexp: "^{{ ctName }}:"
+    line: "{{ ctName }}:lxc,{{ ctGroups | join(',') }}"
+  become: yes
+  become_user: "{{ lxcUser }}"
+
 
 # Use shell to interact with iptables because iptables modules is not idempotent
 - name: Remove previous iptables DNAT rules

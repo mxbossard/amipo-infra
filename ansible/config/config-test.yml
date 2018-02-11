@@ -17,3 +17,6 @@ provisioningPubKey: "{{ lookup('file', provisioningKeyFilepath + '.pub') }}"
 
 lxcContainerRepo: /home/{{lxcUser}}/.local/share/lxc
 
+# Read proxy config from a script
+proxyConfigScriptPath: /etc/profile.d/proxy.sh
+proxyConfig: "{{ (proxyConfigScriptPath | exists) | ternary(lookup('file', proxyConfigScriptPath) | regex_replace('\\n', '; ') + ';', '') | regex_replace(';;', ';') }}"
