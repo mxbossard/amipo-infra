@@ -92,10 +92,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     machine.persistent_storage.location = amipo_lxc_disk_file
     machine.persistent_storage.size = 5000
     machine.persistent_storage.diskdevice = '/dev/sdc'
-    machine.persistent_storage.mountname = 'lxc-lv'
+    machine.persistent_storage.mountname = 'lxc_lv'
     machine.persistent_storage.filesystem = 'ext4'
     machine.persistent_storage.mountpoint = '/mnt/lxc'
-    machine.persistent_storage.volgroupname = 'lxc-vg'
+    machine.persistent_storage.volgroupname = 'amipo_vg'
 
     # Run script to increase swap memory
     #machine.vm.provision "shell", path: "increase_swap.sh"

@@ -1,6 +1,6 @@
 # FS Config
-lxcVgName: lxc-vg
-lxcLvName: lxc-lv
+lxcVgName: amipo_vg
+lxcLvName: lxc_lv
 lxcLvSize: 4G
 lxcVolPath: /home/lxc
 
