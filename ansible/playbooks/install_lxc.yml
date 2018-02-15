@@ -1,7 +1,7 @@
 ---
 
 - name: Install and setup LXC on hosts
-  hosts: lxc_hosts
+  hosts: lxc_host
   become: yes
 
   vars_files:

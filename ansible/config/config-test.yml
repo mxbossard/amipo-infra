@@ -6,7 +6,8 @@ lxcHostIp: 192.168.56.111
 controllerUser: vagrant
 controllerHome: /home/{{ controllerUser }}
 ansibleHome: "{{ controllerHome }}/ansible"
-inventoryHome: "{{ ansibleHome }}/inventory"
+#inventoryHome: "{{ ansibleHome }}/inventory"
+devInventory: "{{ ansibleHome }}/inventory"
 playbooksHome: "{{ ansibleHome }}/playbooks"
 configHome: "{{ ansibleHome }}/config"
 

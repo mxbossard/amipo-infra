@@ -1,0 +1,15 @@
+ubuntu_xenial:
+  distribName: ubuntu
+  distribRelease: xenial
+
+debian_stretch:
+  distribName: alpine
+  distribRelease: stretch
+
+alpine_3.7:
+  distribName: alpine
+  distribRelease: 3.7
+
+front:
+  ctPortsMapping: {80: 80, 443: 443}
+

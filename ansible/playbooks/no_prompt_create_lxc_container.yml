@@ -1,0 +1,19 @@
+---
+
+- name: Create a LXC container
+  hosts: lxc_host
+
+  vars_files:
+    - config-global.yml
+    - "{{ configHome }}/config-{{ envName }}.yml"
+    - "{{ configHome }}/lxc.yml"
+
+  roles:
+    - role: lxc_container
+      distribName: "{{ distribName }}"
+      distriRelease: "{{ distribRelease }}"
+      ctName: "{{ containerName }}"
+      ctGroups: "{{ containerGroups }}"
+      ctPortsMapping: "{{ portsMapping }}"
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

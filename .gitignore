@@ -1,4 +1,5 @@
 .vagrant
+.amipoLocal
 *.swp
 *.swo
 *.vdi
@@ -6,3 +7,10 @@
 *.log
 *.retry
 #git
+
+ansible/inventory/lxcLocalInventory.sh
+
+# Specific MBD files
+ansible/amipo_infra.inventory
+squid_notes.md
+

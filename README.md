@@ -46,7 +46,7 @@ Previous build may interfer with new ones. You can clean vagrant env by removing
 * .vagrant/machines/*
 * ~/VirtualBox VMs/*
 
-The additional drive on which are installed LXC containers can be removed too. It is located in ~/.vagrant/amipo1_disk_lxc.vdi
+The additional drive on which are installed LXC is persistent. It is not destroy on vagrant destroy. To destroy it, you can remove the file located in ~/.vagrant/amipo1_disk_lxc.vdi but only when vagrant box amipo1 is halted or destoryed.
 
 ### Unable to resolve vagrant box names
 You should be able to ping amipo1.dev and controller.dev from your host computer. If not dnsmasq is probably badly configured. You could try a `sudo service dnsmasq restart`.
@@ -104,6 +104,15 @@ sudo find /etc/nginx -type d -exec sudo setfacl -R -m d:g:adm:rwX {} \;
 
 * Décrire l'infra dans un fichier de config. Construire un playbook qui determine la liste des CT cible en fonction du fichier de config, puis verifie leur existance, ...
 
+## Choix
+### Ansible, Inventory, lxc
+* L'accent est mis sur la simplicité d'utilisation des conteneurs.
+* L'infrastructure devrait etre décrite de maniere similaire pour chaque environnement.
+* Les differences entre les environnements devraient etre faible.
+* Les VMs de l'environnement de dev provisionnés par vagrant sont accessibles avec le suffixe .dev
+* Les conteneurs LXC sont accessibles avec le suffixe .lxc
+* L'environnement de dev doit pouvoir etre construit par morceau pour faciliter l'usage : par defaut lors du premier déploiement de l'environnement de dev, seul un petit noyau de l'infra est construit.
+* L'inventory ansible de dev n'est pas statique du fait de cette construction par morceau. Seul les machines (conteneurs) construits sont listées par un inventory dynamique.
 
 ### Setup on debian like system
 _Download vagrant from https://www.vagrantup.com/downloads.html_

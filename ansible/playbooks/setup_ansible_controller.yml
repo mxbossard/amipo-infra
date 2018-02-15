@@ -1,7 +1,7 @@
 ---
 
 - name: Setup ansible controller
-  hosts: controllers
+  hosts: controller
   become: yes
 
   vars_files:

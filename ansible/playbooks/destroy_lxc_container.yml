@@ -1,7 +1,7 @@
 ---
 
 - name: Destroy a LXC container
-  hosts: lxc_hosts
+  hosts: lxc_host
 
   vars_files:
     - config-global.yml

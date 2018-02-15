@@ -2,6 +2,13 @@ VAGRANTFILE_API_VERSION = "2"
 
 amipo_lxc_disk_file = "#{Dir.home}/.vagrant.d/amipo1_disk_lxc.vdi"
 
+system("
+    if [ #{ARGV[0]} = 'up' ]; then
+        echo 'Execute vbox storages cleaning script ...'
+        ./scripts/clean_vbox_storages.sh #{amipo_lxc_disk_file}
+    fi
+")
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Use the same key for each machine
   config.ssh.insert_key = false
@@ -82,6 +89,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Change vm ID, needed for storage
       vb.customize ["modifyvm", :id, "--name", "amipo1"]
     end
+
+    # Execute vbox clean storage script
+    #machine.vm.provision "shell", path: "scripts/clean_vbox_storages.sh", args: amipo_lxc_disk_file
 
     # Ensure lvm2 is present in the box
     machine.vm.provision "shell", inline: "sudo apt-get --assume-yes install lvm2"

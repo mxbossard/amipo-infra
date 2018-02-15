@@ -6,6 +6,7 @@ lxcVolPath: /home/lxc
 
 # Setup config
 lxcUser: lxc
+lxcHome: /home/{{ lxcUser }}
 
 lxcContainerRepo: /home/{{ lxcUser }}/.local/share/lxc
 lxcAnsibleGroupsFile: /home/{{ lxcUser }}/.lxc_ansible_groups

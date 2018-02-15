@@ -1,11 +1,17 @@
 ---
 
 - name: Provision test VMs
-  hosts: devs,lxc
+  hosts: dev
   tasks:
     - debug: msg="Provision test VMs"
-    
+   
+ 
 - import_playbook: install_lxc.yml
+
+- import_playbook: autoBuildLxcContainers.yml
+  vars: 
+    limitPattern: front
+
 
 - import_playbook: front_nginx.yml
 
