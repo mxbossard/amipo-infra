@@ -43,7 +43,7 @@
 
     - name: Copy lxc inventory script
       template:
-        src: lxcLocalInventory.sh
+        src: lxcLocalInventory.sh.j2
         dest: "{{ inventoryHome }}/lxcLocalInventory.sh"
         owner: "{{ controllerUser }}"
         group: "{{ controllerUser }}"

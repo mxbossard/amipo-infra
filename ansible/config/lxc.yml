@@ -9,7 +9,9 @@ lxcUser: lxc
 lxcHome: /home/{{ lxcUser }}
 
 lxcContainerRepo: /home/{{ lxcUser }}/.local/share/lxc
-lxcAnsibleGroupsFile: /home/{{ lxcUser }}/.lxc_ansible_groups
+lxcVolumesDir: "{{ lxcHome }}/volumes"
+lxcAnsibleGroupsFile: "{{ lxcHome }}/.ansible_groups"
+lxcIdsMapFile: "{{ lxcHome }}/.ids_map"
 
 lxcSubnet: 10.0.3.0/24
 lxcGateway: 10.0.3.1

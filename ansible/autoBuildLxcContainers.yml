@@ -27,6 +27,7 @@
         #infraParents: "{{ infraConfig.parents }}"
         #infraHosts: {}
 
+    #- debug: var=limitSubset
     #- debug: var=infraHosts
     #- debug: var=infraGroups
     #- debug: var=infraParents
@@ -111,7 +112,7 @@
 
     # Call ansible-playbook instead of include_role to workaround the bug
     - name: Create not existing CTs
-      shell: cd {{ ansibleHome }}; ansible-playbook {{ ansibleHome }}/playbooks/no_prompt_create_lxc_container.yml --extra-vars "containerName={{ item | regex_replace('\.lxc$', '' ) }} containerGroups='{{ infraHosts[item] }}' distribName='{{ hostAllVars[item].distribName }}' distribRelease='{{ hostAllVars[item].distribRelease }}' portsMapping='{{ hostAllVars[item].ctPortsMapping | default({}) }}'"
+      shell: cd {{ ansibleHome }}; ansible-playbook {{ ansibleHome }}/no_prompt_create_lxc_container.yml --extra-vars "containerName={{ item | regex_replace('\.lxc$', '' ) }} containerGroups='{{ infraHosts[item] }}' distribName='{{ hostAllVars[item].distribName }}' distribRelease='{{ hostAllVars[item].distribRelease }}' portsMapping='{{ hostAllVars[item].ctPortsMapping | default({}) }}' volumeRules='{{ (hostAllVars[item].ctVolumeRules | default([])) | to_yaml }}'"
       delegate_to: localhost
       become: yes
       become_user: "{{ controllerUser }}"

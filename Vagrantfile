@@ -18,7 +18,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.forward_agent = true
 
   config.vm.box = "ubuntu/xenial64"
-  #config.vm.box = "debian/stretch64"
+  #config.vm.box = "debian/contrib-stretch64"
 
   # Enable vagrant plugin landrush to help vagrant boxes dns to resolve box names
   config.landrush.enabled = true
@@ -72,8 +72,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       ansible.compatibility_mode = "2.0"
       ansible.provisioning_path = "/home/vagrant/ansible"
       ansible.config_file = "ansible.cfg"
-      ansible.inventory_path = "inventory"
-      ansible.playbook = "playbooks/setup_ansible_controller.yml"
+      ansible.inventory_path = "dev_inventory"
+      ansible.playbook = "setup_ansible_controller.yml"
       ansible.limit = "all"
     end
   end
@@ -116,7 +116,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     machine.vm.provision "ansible" do |ansible|
       ansible.playbook_command = "scripts/ansible-playbook"
-      ansible.playbook = "ansible/playbooks/provision_amipo_test.yml"
+      ansible.playbook = "ansible/provision_amipo_test.yml"
       ansible.verbose = true
       ansible.limit = "all"
     end

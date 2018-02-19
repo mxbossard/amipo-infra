@@ -13,7 +13,8 @@
       distribName: "{{ distribName }}"
       distriRelease: "{{ distribRelease }}"
       ctName: "{{ containerName }}"
-      ctGroups: "{{ containerGroups }}"
-      ctPortsMapping: "{{ portsMapping }}"
+      ctGroups: "{{ containerGroups | from_yaml }}"
+      ctPortsMapping: "{{ portsMapping | from_yaml }}"
+      ctVolumeRules: "{{ volumeRules | from_yaml }}"
 
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

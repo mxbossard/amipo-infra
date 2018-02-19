@@ -102,19 +102,25 @@
     - name: Configure subgid
       lineinfile:
         dest: /etc/subgid
-        regexp: "^{{lxcUser}}:"
-        line: "{{lxcUser}}:1000000:65536"
+        #regexp: "^{{lxcUser}}:"
+        line: "{{ item }}"
+      with_items:
+        - "{{lxcUser}}:2000:999"
+        - "{{lxcUser}}:1000000:100000000"
 
     - name: Configure subuid
       lineinfile:
         dest: /etc/subuid
-        regexp: "^{{lxcUser}}:"
-        line: "{{lxcUser}}:1000000:65536"
+        #regexp: "^{{lxcUser}}:"
+        line: "{{ item }}"
+      with_items:
+        - "{{lxcUser}}:2000:999"
+        - "{{lxcUser}}:1000000:100000000"
 
     - name: Grant lxcUser to up some veth devices
       lineinfile:
         dest: /etc/lxc/lxc-usernet
-        line: "{{lxcUser}} veth lxcbr0 100"
+        line: "{{lxcUser}} veth lxcbr0 1000"
 
     # Use iptables-persistent package to save rules
     - name: Save iptables rules
@@ -177,17 +183,20 @@
 
     - name: Copy lxc inventory script
       template:
-        src: lxcRemoteInventory.py
+        src: lxcRemoteInventory.py.j2
         dest: /home/{{lxcUser}}/lxcRemoteInventory.py
         owner: "{{lxcUser}}"
         group: "{{lxcUser}}"
         mode: 0744
 
-    - name: Create container groups config file
+    - name: Create some files
       copy:
         content: ""
-        dest: "{{ lxcAnsibleGroupsFile }}"
+        dest: "{{ item }}"
         force: no
+      with_items:
+        - "{{ lxcAnsibleGroupsFile }}"
+        - "{{ lxcIdsMapFile }}"
       become: yes
       become_user: "{{lxcUser}}"
 

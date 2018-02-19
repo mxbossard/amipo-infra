@@ -65,18 +65,15 @@ This infra code is responsible to setup the infrastructure.
 
 ## TODO Vagrant
 * Accelerer l'installation d'ansible dans la vm controller
-* Etudier la possibilité de provisionner avec ansible chaque vagrant box independament en passant par le controller
 * Utiliser une cle ssh perso plutot que la cle insecure_private_key de vagrant ?
 
 
 ## TODO Ansible
-* Découpler la création des conteneur de la configuration des conteneurs.
-* Créer un playbooks de creation de l'infra: It should ping for each needed containers, then start or create needed ones. It should expose a mean to build only few containers. Idées: pour chaque env on liste les CT (avec la distrib et la config du CT si besoin groups, volumes,... ?) Lorsque je lance un playbook sur le group frontal, ansible check si tous les CT de la liste sont up and running avant de jouer le playbook.
-* Revoir l'idempotence de l'initialisation des CT
-* Configurer les CT pour monter des repertoires du host dans les conteneurs.
 * Fournir un conteneur Frontal nginx prod ready
 * Fournir un conteneur Accueil ssh (lobby) prod ready
-* Pour le moment, l'utilsateur a besoin d'avoir les access au framagit Amipo pour créer le frontal. Il faudrait voir si on peut faire mieux. Pour le moment c'est impossible, car le repo de la config nginx est privé. Quand il sera public, on devrait pouvoir contourner le problème avec un checkout du projet via le protocol https si l'utilisateur ne possede pas de compte chez framagit.
+* Passer des patterns complexes (avec or, and, ...) au builder de conteneur
+* Revoir l'idempotence de l'initialisation des CT
+* Comment faire pour choisir entre les protocole ssh et https pour cloner les repo si l'utilisateur ne possede pas de compte chez framagit ?
 
 
 ## TODO Frontal
@@ -99,10 +96,6 @@ sudo find /etc/nginx -type d -exec sudo setfacl -R -m d:g:adm:rwX {} \;
 
 ## Reflexions / Notes
 
-### Pour delayer la création des CT à la demande lors du lancement des playbooks
-* Construire un inventory ansible complet. Lorsqu'on lance un playbook, un hook (?) s'occupe de faire en sorte que tous les CT existent, ont la bonne config (distrib, version, ...) et soient démarrés. Le hic c'est que cela peut faire doublon avec l'inventaire dynamic basé sur lxc-ls, il faut vérifier que ce ne soit pas incompatible. => Ca à l'air compatible, je pars la dessus.
-
-* Décrire l'infra dans un fichier de config. Construire un playbook qui determine la liste des CT cible en fonction du fichier de config, puis verifie leur existance, ...
 
 ## Choix
 ### Ansible, Inventory, lxc
@@ -113,6 +106,7 @@ sudo find /etc/nginx -type d -exec sudo setfacl -R -m d:g:adm:rwX {} \;
 * Les conteneurs LXC sont accessibles avec le suffixe .lxc
 * L'environnement de dev doit pouvoir etre construit par morceau pour faciliter l'usage : par defaut lors du premier déploiement de l'environnement de dev, seul un petit noyau de l'infra est construit.
 * L'inventory ansible de dev n'est pas statique du fait de cette construction par morceau. Seul les machines (conteneurs) construits sont listées par un inventory dynamique.
+* Le provisioning des VM vagrant est réalisé le plus possible avec ansible. Ansible est installé dans la VM controller, des scripts sont présents pour utiliser ansible depuis le hosts via le controller qui doit etre up pour fonctionner.
 
 ### Setup on debian like system
 _Download vagrant from https://www.vagrantup.com/downloads.html_

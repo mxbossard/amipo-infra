@@ -3,7 +3,7 @@
 scriptDir=$(dirname $(readlink -f $0))
 cd $scriptDir/..
 
-command="PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_KEY_CHECKING=false ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o ControlMaster=auto -o ControlPersist=60s' ansible $@"
+command="PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_KEY_CHECKING=false ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o ControlMaster=auto -o ControlPersist=1s' ansible $@"
 
 cleanedCommand=$(echo $command | sed -e 's/--inventory-file=[^ ]*//' -e 's/-v ansible\//-v /')
 #echo "Vagrant command: [$command]"

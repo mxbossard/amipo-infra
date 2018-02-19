@@ -12,6 +12,6 @@ managerSshKeyFile="~/.ssh/provisioning_key"
 # using dns method
 ctIp="$(dig $ctName ${ctName}.lxc +short | tail -1)"
 
-sshArgs="-o ControlMaster=auto -o ControlPersist=60s -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
+sshArgs="-o ControlMaster=auto -o ControlPersist=1s -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
 ssh $sshArgs -i $managerSshKeyFile $managerUser@$ctIp
 

@@ -25,7 +25,7 @@ def parse_args():
 def list_lxc_groups(availableLxcHosts):
     file = None
     try:
-        file = open("/home/lxc/.lxc_ansible_groups", "r")
+        file = open("{{ lxcAnsibleGroupsFile }}", "r")
         groupsMap = {}
         for line in file.readlines():
             row = line.split(':')

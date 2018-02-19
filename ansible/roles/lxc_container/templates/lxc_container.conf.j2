@@ -1,0 +1,42 @@
+# Subuids and subgids mapping
+#lxc.id_map = u 0 {{ ctPrefixId }}00000 65536
+#lxc.id_map = g 0 {{ ctPrefixId }}00000 65536
+lxc.id_map = u 0 {{ ctPrefixId }}00000 1999
+lxc.id_map = g 0 {{ ctPrefixId }}00000 1999
+# IDs 2000 to 2999 are not mapped and are shared with host
+lxc.id_map = u 2000 2000 999
+lxc.id_map = g 2000 2000 999
+lxc.id_map = u 3000 {{ ctPrefixId }}03000 62536
+lxc.id_map = g 3000 {{ ctPrefixId }}03000 62536
+
+# "Secure" mounting
+lxc.mount.auto = proc:mixed sys:ro cgroup:mixed
+
+lxc.network.0.type = veth
+lxc.network.0.link = lxcbr0
+lxc.network.0.flags = up
+lxc.network.0.hwaddr = {{ ctDeterministicMacAddress }}
+lxc.network.0.ipv4.address = {{ lxcSubnet }}
+lxc.network.0.ipv4.gateway = {{ lxcGateway }}
+
+# Volumes mounting rules
+{% if ctVolumeRules is defined %}
+{% for volumeRule in ctVolumeRules %}
+{% if volumeRule['mode'] is defined and volumeRule['mode'] == 'rw' %}
+{% set mode = 'rw' %}
+{% else %}
+{# default mode: read only #}
+{% set mode = 'ro' %}
+{% endif %}
+{% if volumeRule['absolute'] is defined and volumeRule['absolute'] %}
+{# if absolute rule the src path is not relative to ct own volume dir #}
+{% set srcPath = lxcVolumesDir + '/' + volumeRule['src'] %}
+{% else %}
+{# default srcPath is not absolute #}
+{% set srcPath = lxcVolumesDir + '/relative/' + ctName + '/' + volumeRule['src'] %}
+{% endif %}
+{# Destination must be absolute in the container, but without leading slash #}
+{% set destPath = volumeRule['dest'] %}
+lxc.mount.entry = {{ srcPath | regex_replace('/+', '/') }} {{ destPath | regex_replace('^/*', '') }} none bind.{{ mode }} 0 0
+{% endfor %}
+{% endif %}

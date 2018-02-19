@@ -1,19 +1,45 @@
 ---
 
+- name: Read or Create a new prefix id for ct
+  shell: /bin/sh -c '( grep -e ":{{ ctName }}:" {{ lxcIdsMapFile }} | grep -Eo -e "^[0-9]+" ) || ( prefixId=$(( $(tail -1 {{ lxcIdsMapFile }} | grep -Eo -e "^[0-9]+" || echo 9) + 1 )) && echo "$prefixId:{{ ctName }}:" >> {{ lxcIdsMapFile }} && echo $prefixId )'
+  become: yes
+  register: result
+
 - name: Generate deterministic mac address
   set_fact: 
     staticIpAvailable: true
     ctDeterministicMacAddress: "{{ ctName | hash('sha1') | regex_replace('^(..)(..)(..)(..).*', '00:ff:\\1:\\2:\\3:\\4') }}"
+    ctPrefixId: "{{ result.stdout }}"
 
 - debug: var=ctDeterministicMacAddress
 
 - name: Create lxc specific config file
   template:
-    src: lxc-container.conf.j2
+    src: lxc_container.conf.j2
     dest: "{{ tmpLxcConfigFile }}"
     owner: "{{ lxcUser }}"
     group: "{{ lxcUser }}"
     mode: 0400
+  become: yes
+
+- name: List volume directories from container config file
+  shell: /bin/sh -c "grep -e '^\s*lxc.mount.entry' {{ tmpLxcConfigFile }} | sed -re 's/^\s*lxc.mount.entry\s*=\s*(.*)/\1/' | cut -d' ' -f1-2 | tr ' ' '\n'"
+  become: yes
+  register: volumeDirs
+  changed_when: no
+
+#- debug: var=volumeDirs
+
+# Read volumes directories from lxc config files
+- name: Create volumes directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ lxcUser }}"
+    group: "{{ lxcUser }}"
+    mode: 0777
+  with_items: "{{ volumeDirs.stdout_lines }}"
+  when: volumeDirs.stdout_lines | length > 0
   become: yes
 
 - name: Create new container named {{ ctName }} and start it
@@ -26,7 +52,6 @@
     state: started
     template: download
     template_options: --dist {{ distribName }} --release {{ distribRelease }} --arch amd64
-    #template_options: --dist ubuntu --release xenial --arch amd64
     #lxc_path: "{{lxcVolPath}}"
     #directory: "{{lxcVolPath}}/{{ctName}}/rootfs"
     #fs_type: ext4
@@ -50,7 +75,7 @@
   become: yes
 
 - name: Initialize Alpine container
-  shell: "lxc-attach -n {{ ctName }} --clear-env -e -- /bin/sh -c 'su -; udchpd -R; {{ proxyConfig }} apk update -q; apk upgrade -q; apk add -q openssh python2 sudo; id {{ provisioningUser }} || adduser -D {{ provisioningUser }}; rc-update add sshd; /etc/init.d/sshd start'"
+  shell: "lxc-attach -n {{ ctName }} --clear-env -e -- /bin/sh -c 'su -; udchpd -R; {{ proxyConfig }} apk update -q; apk upgrade -q; apk add -q openssh python2 sudo; id {{ provisioningUser }} || adduser -u {{ provisioningUserUid }} -D {{ provisioningUser }}; rc-update add sshd; /etc/init.d/sshd start'"
   register: ctInitMsg
   #failed_when: ctInitMsg.stderr != ''
   until:  ctInitMsg | succeeded
@@ -62,7 +87,7 @@
   tags: init
 
 - name: Initialize Debian container
-  shell: "lxc-attach -n {{ ctName }} --clear-env -e -- /bin/sh -c 'su -; ip addr show | grep 10.0.3.0 && ip addr del 10.0.3.0 dev eth0 && dhclient -r; sleep 1 && dhclient; {{ proxyConfig }} apt update -q -y --force-yes; apt upgrade -q -y --force-yes; apt install -q -y --force-yes ssh python2.7 sudo; test -f /usr/bin/python || ln -s /usr/bin/python2.7 /usr/bin/python; id {{ provisioningUser }} || adduser --disabled-password {{ provisioningUser }}; update-rc.d ssh defaults; /etc/init.d/ssh start'"
+  shell: "lxc-attach -n {{ ctName }} --clear-env -e -- /bin/sh -c 'su -; ip addr show | grep 10.0.3.0 && ip addr del 10.0.3.0 dev eth0 && dhclient -r; sleep 1 && dhclient; {{ proxyConfig }} apt update -q -y --force-yes; apt upgrade -q -y --force-yes; apt install -q -y --force-yes ssh python2.7 sudo; test -f /usr/bin/python || ln -s /usr/bin/python2.7 /usr/bin/python; id {{ provisioningUser }} || adduser --uid {{ provisioningUserUid }} --disabled-password {{ provisioningUser }}; update-rc.d ssh defaults; /etc/init.d/ssh start'"
   register: ctInitMsg
   #failed_when: ctInitMsg.stderr != ''
   until:  ctInitMsg | succeeded
