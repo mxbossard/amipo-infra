@@ -69,6 +69,13 @@
         mode: 0644
         force: no
 
+    - name: Create proxy config file if it does not exists
+      copy:
+        content: ""
+        dest: "{{ proxyConfigScriptPath }}"
+        mode: 0644
+        force: no
+
     - name: Configure dnsmasq to resolve .lxc domain
       lineinfile:
         dest: /etc/dnsmasq.d/lxc
