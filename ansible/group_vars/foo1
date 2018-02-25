@@ -1,0 +1,4 @@
+bar: "bar_foo1"
+baz: ["bar_foo1"]
+bal: {"key": "bar_foo1"}
+

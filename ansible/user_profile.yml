@@ -1,0 +1,32 @@
+---
+
+# This playbook is responsible to deploy user profiles on hosts. 
+
+- name: Deploy user profiles
+  hosts: lobby #user_profile
+  become: yes
+
+  vars_files:
+    - amipo_user.yml
+
+  tasks:
+    - debug: var=users
+
+    - name: Create users
+      user:
+        name: "{{ item.key }}"
+        groups: "{{ item.value.groups }}"
+        uid: "{{ item.value.uid }}"
+        home: "{{ item.value.homeDir }}"
+        generate_ssh_key: yes
+      with_dict: "{{ users }}"
+
+    - name: Copy authorized key
+      lineinfile:
+        dest: "~/.ssh/authorized_keys"
+        line: "{{ item.value.ssh_pub }}"
+      with_dict: "{{ users }}"
+
+  handlers:
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

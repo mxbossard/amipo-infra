@@ -1,0 +1,5 @@
+ctPortsMapping: {80: 80, 443: 443}
+#ctVolumeRules: [{src: /log, dest: /var/log, mode: rw}, {absolute: yes, src: /common_home, dest: home, mode: rw}]
+#ctVolumeRules: ctVolumeRules + [{src: /log, dest: /var/log, mode: rw}]
+ctVolumeRules: [{src: /log, dest: /var/log, mode: rw}]
+

@@ -67,6 +67,10 @@ This infra code is responsible to setup the infrastructure.
 
 
 ## TODO Ansible
+* Verifier l'utilisation actuelle des group_vars.
+* Il faudrait que 2 groupes distincts puissent definir chacun leur volumes.
+* Il y a confusion entre les noms et les groupes pour les conteneurs. le ct front a pour nom front dans le groupe front. Cela n'est pas clair du coup pour le debug. Il pourrait etre judicieux de rajouter le suffix .lxc dans le nom du conteneur.
+* Il faudrait se passer des fichiers dans config/
 * Fournir un conteneur Frontal nginx prod ready
 * Fournir un conteneur Accueil ssh (lobby) prod ready
 * Passer des patterns complexes (avec or, and, ...) au builder de conteneur

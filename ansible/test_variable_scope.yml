@@ -1,0 +1,29 @@
+---
+
+# This playbook is responsible to deploy user profiles on hosts. 
+
+- name: Test variables
+  hosts: all
+
+  vars:
+
+  tasks:
+    - name: Test vars
+      debug: var={{ item }}
+      with_items:
+        - ctVolumeRules
+        - hostvars
+        - distribName
+        - foo
+        #- foo1
+        #- foo2
+        #- bar
+        #- baz
+        #- bal
+
+    #- debug: var=ctVolumeRules
+
+
+  handlers:
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

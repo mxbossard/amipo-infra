@@ -1,0 +1,5 @@
+---
+
+#ctVolumeRules: ctVolumeRules + [{absolute: yes, src: /common_home, dest: home, mode: rw}]
+ctVolumeRules: [{absolute: yes, src: /common_home, dest: home, mode: rw}]
+
