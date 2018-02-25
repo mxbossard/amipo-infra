@@ -46,7 +46,7 @@ Previous build may interfer with new ones. You can clean vagrant env by removing
 * .vagrant/machines/*
 * ~/VirtualBox VMs/*
 
-The additional drive on which are installed LXC is persistent. It is not destroy on vagrant destroy. To destroy it, you can remove the file located in ~/.vagrant/amipo1_disk_lxc.vdi but only when vagrant box amipo1 is halted or destoryed.
+The additional drive on which are installed LXC is persistent. It is not destroy on vagrant destroy. To destroy it, you can remove the file located in ~/.vagrant.d/amipo1_disk_lxc.vdi but only when vagrant box amipo1 is halted or destoryed.
 
 ### Unable to resolve vagrant box names
 You should be able to ping amipo1.dev and controller.dev from your host computer. If not dnsmasq is probably badly configured. You could try a `sudo service dnsmasq restart`.
@@ -60,8 +60,6 @@ This infra code is responsible to setup the infrastructure.
 * How to manage secrets ?
 
 ## TODO
-* Migrate this repo from github.io to framagit.org
-
 
 ## TODO Vagrant
 * Accelerer l'installation d'ansible dans la vm controller
@@ -79,6 +77,16 @@ This infra code is responsible to setup the infrastructure.
 ## TODO Frontal
 * Fournir un SSL AC de dev qui pourra etre installer sur les postes de dev, et signer les certificats de dev du frontal.
 * Monter des repertoires (log, ssl certs, ...) du host lxc dans le conteneur.
+
+
+## TODO Lobby ssh
+* Créer des comptes utilisateurs sur les machines
+* Lister les comptes utilisateurs
+* Chaque compte sur toutes les machines ?
+* Généré une nouvelle clé ssh à la création de l'utilisateur
+* Ou stocker les clés ? Un ct de reference ?
+* Comment gérer les groupes : quel user dans quel groupe sur quelle machine ?
+* La liste des users et leur groupes est un secret.
 
 
 ## Some Documentation

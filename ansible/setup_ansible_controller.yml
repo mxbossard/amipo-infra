@@ -36,10 +36,11 @@
         creates: "{{ provisioningKeyFilepath }}"
       become_user: "{{ controllerUser }}"
 
-    - name: Copy host ssh config in .ssh controller dir
-      synchronize:
-        src: "{{ hostSshDir }}/"
-        dest: "{{ controllerHome }}/.ssh/"
+    #- name: Copy host ssh config in .ssh controller dir
+    #  synchronize:
+    #    src: "{{ hostSshDir }}/"
+    #    dest: "{{ controllerHome }}/.ssh/"
+    #    use_ssh_args: yes
 
     - name: Copy lxc inventory script
       template:

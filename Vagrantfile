@@ -59,7 +59,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Copy insecure_private_key in controller guest for ansible usage
     machine.vm.synced_folder "#{Dir.home}/.vagrant.d", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{Dir.home}/.vagrant.d/insecure_private_key"]
-    machine.vm.synced_folder "#{Dir.home}/.ssh", "/home/vagrant/.host_ssh/", type: "rsync"
+    #machine.vm.synced_folder "#{Dir.home}/.ssh", "/home/vagrant/.host_ssh/", type: "rsync"
 
     machine.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", 256]

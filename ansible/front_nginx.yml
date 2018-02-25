@@ -1,24 +1,5 @@
 ---
 
-#- name: Build a CT
-#  hosts: lxc_hosts
-#
-#  vars:
-#
-#  vars_files:
-#    - config-global.yml
-#    - "{{ configHome }}/config-{{ envName }}.yml"
-#    - "{{ configHome }}/lxc.yml"
-#
-#  roles:
-#    - role: lxc_container
-#      distribName: alpine
-#      ctName: front
-#      ctGroups: [ "front", "nginx" ] 
-#      ctPortsMapping: {80: 80, 443: 443}
-#
-#  tasks:
-
 - name: Setup front inside the CT
   hosts: front
   become: yes
@@ -85,6 +66,7 @@
       synchronize:
         src: /vagrant/submodules/homepage-static/
         dest: /var/www/amipo/homepage-static/
+        use_ssh_args: yes
       notify: Reload nginx
       tags: ["nginx"]
 
@@ -102,6 +84,7 @@
       synchronize:
         src: /vagrant/submodules/front-nginx-config/
         dest: /etc/nginx
+        use_ssh_args: yes
       notify: Reload nginx
       tags: ["nginx"]
 
