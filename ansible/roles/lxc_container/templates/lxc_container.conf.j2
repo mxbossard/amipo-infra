@@ -21,7 +21,7 @@ lxc.network.0.ipv4.gateway = {{ lxcGateway }}
 
 # Volumes mounting rules
 {% if ctVolumeRules is defined %}
-{% for volumeRule in ctVolumeRules %}
+{% for volumeRule in ctVolumeRules.values() %}
 {% if volumeRule['mode'] is defined and volumeRule['mode'] == 'rw' %}
 {% set mode = 'rw' %}
 {% else %}

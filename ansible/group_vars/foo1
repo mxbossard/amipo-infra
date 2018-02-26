@@ -1,3 +1,11 @@
+---
+
+ctVolumeRules:
+  spool:
+    src: /spool
+    dest: /var/spool
+    mode: rw
+
 bar: "bar_foo1"
 baz: ["bar_foo1"]
 bal: {"key": "bar_foo1"}

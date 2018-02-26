@@ -1,49 +1,8 @@
-#ubuntu_xenial:
-#  distribName: ubuntu
-#  distribRelease: xenial
-#
-#debian_stretch:
-#  distribName: alpine
-#  distribRelease: stretch
-#
-#alpine_3.7:
-#  distribName: alpine
-#  distribRelease: 3.7
-#
-#front:
-#  ctPortsMapping: {80: 80, 443: 443}
-#  #ctVolumeRules: [{src: /log, dest: /var/log, mode: rw}, {absolute: yes, src: /common_home, dest: home, mode: rw}]
-#  #ctVolumeRules: ctVolumeRules + [{src: /log, dest: /var/log, mode: rw}]
-#  ctVolumeRules: [{src: /log, dest: /var/log, mode: rw}]
-#
-#lobby:
-#  ctPortsMapping: {22: 22}
-#  #ctVolumeRules: [{src: /log, dest: /var/log, mode: rw}, {absolute: yes, src: /common_home, dest: home, mode: rw}]
-#  #ctVolumeRules: ctVolumeRules + [{src: /log, dest: /var/log, mode: rw}]
-#  ctVolumeRules: [{src: /log, dest: /var/log, mode: rw}]
-#
-#email:
-#  #ctVolumeRules: [{src: /spool, dest: /var/spool, mode: rw}, {absolute: yes, src: /common_home, dest: home, mode: rw}]
-#  #ctVolumeRules: ctVolumeRules + [{src: /spool, dest: /var/spool, mode: rw}]
-#  ctVolumeRules: [{src: /spool, dest: /var/spool, mode: rw}]
-#
-#user_layer:
-#  #ctVolumeRules: ctVolumeRules + [{absolute: yes, src: /common_home, dest: home, mode: rw}]
-#  ctVolumeRules: [{absolute: yes, src: /common_home, dest: home, mode: rw}]
-#
+---
 
-foo:
-  #ctVolumeRules: [{src: /spool, dest: /var/spool, mode: rw}, {absolute: yes, src: /common_home, dest: home, mode: rw}]
-  #ctVolumeRules: ctVolumeRules + [{src: /spool, dest: /var/spool, mode: rw}]
-  ctVolumeRules: [{src: /spool, dest: /var/spool, mode: rw}]
+distribName: alpine
+distribRelease: 3.7
 
-foo1:
-  bar: "bar_foo1"
-  baz: ["bar_foo1"]
-  bal: {"key": "bar_foo1"}
-   
-foo2:
-  bar: "bar_foo2"
-  baz: ["bar_foo2"]
-  bal: {"key": "bar_foo2"}
+ctPortsMapping: {}
+ctVolumeRules: {}
 

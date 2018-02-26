@@ -1,7 +1,13 @@
 ---
 
-ctPortsMapping: {22: 22}
-#ctVolumeRules: [{src: /log, dest: /var/log, mode: rw}, {absolute: yes, src: /common_home, dest: home, mode: rw}]
-#ctVolumeRules: ctVolumeRules + [{src: /log, dest: /var/log, mode: rw}]
-ctVolumeRules: [{src: /log, dest: /var/log, mode: rw}]
+ctPortsMapping:
+  ssh:
+    dport: 4222
+    toport: 22
+
+ctVolumeRules:
+  log:
+    src: /log
+    dest: /var/log
+    mode: rw
 

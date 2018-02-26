@@ -5,21 +5,30 @@
 - name: Test variables
   hosts: all
 
+  vars_files:
+    - config/config-dev.yml
+
   vars:
 
   tasks:
     - name: Test vars
       debug: var={{ item }}
       with_items:
+        #- proxyConfig
         - ctVolumeRules
-        - hostvars
-        - distribName
-        - foo
+        #- hostvars
+        #- groups
+        #- distribName
+        #- foo
         #- foo1
         #- foo2
         #- bar
         #- baz
         #- bal
+
+    - debug: var=item.value.dport
+      #with_dict: "{{ ctVolumeRules }}"
+      with_dict: "{{ ctPortsMapping }}"
 
     #- debug: var=ctVolumeRules
 

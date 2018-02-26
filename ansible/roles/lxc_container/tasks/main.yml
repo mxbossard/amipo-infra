@@ -1,5 +1,10 @@
 ---
 
+- debug: var={{ item }}
+  with_items:
+    - ctPortsMapping
+    - ctVolumeRules
+
 - name: Read or Create a new prefix id for ct
   shell: /bin/sh -c '( grep -e ":{{ ctName }}:" {{ lxcIdsMapFile }} | grep -Eo -e "^[0-9]+" ) || ( prefixId=$(( $(tail -1 {{ lxcIdsMapFile }} | grep -Eo -e "^[0-9]+" || echo 9) + 1 )) && echo "$prefixId:{{ ctName }}:" >> {{ lxcIdsMapFile }} && echo $prefixId )'
   become: yes
@@ -153,7 +158,7 @@
   become: yes
 
 - name: Configure iptables to forward traffic
-  shell: "iptables -t nat -S PREROUTING | grep -e '-d {{ lxcHostIp }}/32 -p tcp -m tcp --dport {{ item.key }} -j DNAT --to-destination {{ discoveredCtIp }}:{{ item.value }}' || iptables -t nat -A PREROUTING -d {{ lxcHostIp }}/32 -p tcp -m tcp --dport {{ item.key }} -j DNAT --to-destination {{ discoveredCtIp }}:{{ item.value }}"
+  shell: "iptables -t nat -S PREROUTING | grep -e '-d {{ lxcHostIp }}/32 -p tcp -m tcp --dport {{ item.value.dport }} -j DNAT --to-destination {{ discoveredCtIp }}:{{ item.value.toport }}' || iptables -t nat -A PREROUTING -d {{ lxcHostIp }}/32 -p tcp -m tcp --dport {{ item.value.dport }} -j DNAT --to-destination {{ discoveredCtIp }}:{{ item.value.toport }}"
   register: result
   changed_when: result.stdout == ""
   become: yes
