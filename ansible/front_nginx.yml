@@ -4,10 +4,10 @@
   hosts: front
   become: yes
 
-  vars_files:
-    - config-global.yml
-    - "{{ configHome }}/config-{{ envName }}.yml"
-    - "{{ configHome }}/lxc.yml"
+#  vars_files:
+#    - config-global.yml
+#    - "{{ configHome }}/config-{{ envName }}.yml"
+#    - "{{ configHome }}/lxc.yml"
 
   tasks:
     - name: Install nginx and dependencies

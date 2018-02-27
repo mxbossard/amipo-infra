@@ -3,10 +3,6 @@
 - name: Destroy a LXC container
   hosts: lxc_host
 
-  vars_files:
-    - config-global.yml
-    - "{{ configHome }}/lxc.yml"
-
   vars_prompt:
     - name: "ctName"
       prompt: "What is the container name to destroy ?"

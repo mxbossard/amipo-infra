@@ -3,11 +3,6 @@
 - name: Create a LXC container
   hosts: lxc_host
 
-  vars_files:
-    - config-global.yml
-    - "{{ configHome }}/config-{{ envName }}.yml"
-    - "{{ configHome }}/lxc.yml"
-
   vars_prompt:
     - name: "containerName"
       prompt: "Container name ?"

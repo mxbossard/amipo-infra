@@ -3,9 +3,9 @@
 # We don't use a standard inventory file to describe this infrastructure. This enable us to build only a part of the infrastructure, and is easier to describe.
 
 containers:
-  front: [alpine_3.7, amipo1, user_layer]
-  lobby: [ubuntu_xenial, amipo1, user_layer]
-  email: [alpine_3.7, amipo1]
+  front.lxc: [alpine_3.7, amipo1, user_layer]
+  lobby.lxc: [ubuntu_xenial, amipo1, user_layer]
+  email.lxc: [alpine_3.7, amipo1]
   database: [alpine_3.7, amipo1]
   wiki: [alpine_3.7, amipo1]
   pad: [alpine_3.7, amipo1]

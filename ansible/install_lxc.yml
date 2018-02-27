@@ -4,10 +4,6 @@
   hosts: lxc_host
   become: yes
 
-  vars_files:
-    - config-global.yml
-    - "{{ configHome }}/lxc.yml"
-
   tasks:
     - name: Install LXC et les dependances necessaires
       apt: pkg="{{item}}" update_cache=yes cache_valid_time=3600

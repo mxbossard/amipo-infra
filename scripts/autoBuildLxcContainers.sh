@@ -1,8 +1,7 @@
 #! /bin/sh
 
 ansibleHome="$HOME/ansible"
-#inventory="$ansibleHome/amipo_infra.inventory"
-inventory="$ansibleHome/dev_inventory"
+inventory="$ansibleHome/development_inventory"
 playbook="$ansibleHome/autoBuildLxcContainers.yml"
 
 limit="$1"
@@ -15,6 +14,5 @@ then
 fi
 
 cd $ansibleHome
-#ansible-playbook -i "$inventory" -i "$ansibleHome/inventory" -e "limitPattern=$limit" $playbook
 ansible-playbook -i "$inventory" -e "limitPattern=$limit" $playbook
 

@@ -1,0 +1,23 @@
+---
+
+ansibleHome: /home/vagrant/ansible
+inventoryHome: "{{ ansibleHome }}/{{ envName }}_inventory"
+playbooksHome: "{{ ansibleHome }}"
+configHome: "{{ ansibleHome }}/config"
+
+# Default container config
+distribName: alpine
+distribRelease: 3.7
+ctPortsMapping: {}
+ctVolumeRules: {}
+
+# Auto lxc build config
+containerListFile: "{{ ansibleHome + '/lxc_container_list.yml' }}"
+lxcMainHost: amipo1.dev
+
+# lxc config
+lxcUser: lxc
+lxcHome: /home/{{ lxcUser }}
+lxcSubnet: 10.0.3.0/24
+lxcGateway: 10.0.3.1
+

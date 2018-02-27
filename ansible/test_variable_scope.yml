@@ -5,9 +5,6 @@
 - name: Test variables
   hosts: all
 
-  vars_files:
-    - config/config-dev.yml
-
   vars:
 
   tasks:
@@ -15,7 +12,7 @@
       debug: var={{ item }}
       with_items:
         #- proxyConfig
-        - ctVolumeRules
+        #- ctVolumeRules
         #- hostvars
         #- groups
         #- distribName
@@ -25,6 +22,7 @@
         #- bar
         #- baz
         #- bal
+        - proxyConfig
 
     - debug: var=item.value.dport
       #with_dict: "{{ ctVolumeRules }}"

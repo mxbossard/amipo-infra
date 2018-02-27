@@ -1,26 +1,44 @@
 ---
 
-# A special playbook responsible to build LXC containers described in containerListFile. This playbook is special, because it load in the inventory the containerListFile before launching the container creation. It is separated in 3 plays, because we use a special play to filter the containers to build a "targeted subset", and then build only desired containers in the last play.
+# A special playbook responsible to build LXC containers. This playbook is special, because it run on "lxc_host" group, and don't use a standard ansible inventory file. 
 
-- name: Load list of container
-  hosts: localhost
+- name: Auto build LXC containers
+  #hosts: lxc_host
+  hosts: all
   run_once: yes
+  gather_facts: no
+  ignore_errors: no
+  any_errors_fatal: True
+
+  vars_files:
+    - config-global.yml
+    - "{{ configHome }}/lxc.yml"
+    - "{{ configHome }}/config-{{ envName }}.yml"
+
+  vars:
+    lxcHostToUse: amipo1.dev
+    limitSubset: "{{ limitPattern | default ('all') }}"
+    infraInventoryFile: "{{ ansibleHome + '/amipo_infra.yml' }}"
 
   tasks:
     - set_fact:
-        infraConfig: "{{ lookup('file', containerListFile) | from_yaml }}"
+        infraConfig: "{{ lookup('file', infraInventoryFile) | from_yaml }}"
 
-    #- set_fact:
-    #    infraGroups: "{{ infraConfig.groups }}"
+    - set_fact:
+        #infraHosts: "{{ infraConfig.containers }}"
+        infraGroups: "{{ infraConfig.groups }}"
+        #infraParents: "{{ infraConfig.parents }}"
+        #infraHosts: {}
 
     # Add .lxc suffix to all infra hosts
     - set_fact:
         infraHosts: "{{ infraHosts | default({}) | combine({(item.key | regex_replace('\\.lxc', '') + '.lxc'): item.value}) }}"
       with_dict: "{{ infraConfig.containers }}" 
 
-    #- debug: var=limitSubset
+    - debug: var=limitSubset
     #- debug: var=infraHosts
     #- debug: var=infraGroups
+    #- debug: var=infraParents
 
     - name: List LXC containers
       #shell: "lxc-ls -1 | awk '{print $1 \".lxc\"}'"
@@ -29,7 +47,7 @@
       become: yes
       become_user: "{{ lxcUser }}"
       changed_when: no
-      delegate_to: "{{ lxcMainHost }}"
+      delegate_to: "{{ lxcHostToUse }}"
 
     - name: Register lists of all existing CTs
       set_fact:
@@ -40,54 +58,42 @@
       add_host:
         #name: "{{ item.key | regex_replace('\\.lxc$', '') }}.lxc"
         name: "{{ item.key }}"
-        groups: "lxc,{{ envName }},{{ item.key | regex_replace('\\.lxc$', '') }},{{ item.value | join(',') }}"
-        #groups: "lxc,{{ item.value | join(',') }}"
+        #groups: "lxc,{{ item.key | regex_replace('\\.lxc$', '') }},{{ item.value | join(',') }}"
+        groups: "lxc,{{ item.value | join(',') }}"
       with_dict: "{{ infraHosts }}"
       changed_when: no
 
-    #- name: Include infra groups
-    #  add_host:
-    #    name: "{{ item.key }}"
-    #    groups: "lxc,{{ item.value | join(',') }}"
-    #  with_dict: "{{ infraGroups }}"
-    #  changed_when: no
+    - name: Include infra groups
+      add_host:
+        name: "{{ item.key }}"
+        groups: "lxc,{{ item.value | join(',') }}"
+      with_dict: "{{ infraGroups }}"
+      changed_when: no
 
-
-- name: Build target subset
-  hosts: "{{ limitPattern | default ('all') }}"
-  run_once: yes
-  gather_facts: no
-  ignore_errors: no
-  any_errors_fatal: True
-
-  tasks:
-    #- debug: var=ansible_play_hosts
+    #- debug: var=hostvars
+    - debug: var=ansible_play_hosts
 
     - set_fact:
-        targetedSubset: "{{ ansible_play_hosts | intersect(groups['lxc']) }}"
-      delegate_to: localhost
-      delegate_facts: True
+        targetedSubset: "{{ groups[(limitSubset | regex_replace('\\.lxc$', '')) + '.lxc'] | default([]) | intersect(groups['lxc']) }}"
+
+    #- name: Include infra parent groups
+    #  add_host:
+    #    name: "{{ item.1 }}"
+    #    groups: "{{ item.0.key }}"
+    #  with_subelements: 
+    #    - "{{ infraGroups }}"
+    #    - parents
+    #  changed_when: no
 
     - name: Register lists of present and missing CTs
       set_fact:
-        presentCts: "{{ hostvars['localhost'].targetedSubset | intersect(hostvars['localhost'].allExistingCts) }}"
-        missingCts: "{{ hostvars['localhost'].targetedSubset | difference(hostvars['localhost'].allExistingCts) }}"
-      delegate_to: localhost
-      delegate_facts: True
+        presentCts: "{{ targetedSubset | intersect(allExistingCts) }}"
+        missingCts: "{{ targetedSubset | difference(allExistingCts) }}" # | difference(groups['lxc_host']) }}"
 
-    #- debug: var=hostvars['localhost'].targetedSubset
-    #- debug: var=hostvars['localhost'].presentCts
-    #- debug: var=hostvars['localhost'].missingCts
+    - debug: var=targetedSubset
+    - debug: var=presentCts
+    - debug: var=missingCts
 
-
-- name: Auto build LXC containers
-  hosts: localhost
-  run_once: yes
-  gather_facts: no
-  ignore_errors: no
-  any_errors_fatal: True
-
-  tasks:
     # Due to a bug, include_role doesn't delegate_to handlers.
     # cf https://github.com/ansible/ansible/issues/26336
     #- name: Create not existing CTs
@@ -116,11 +122,14 @@
     #    - "{{ hostGroups }}"
     #    - groups
 
-    #- debug: var=hostvars
+    #- debug: var=hostAllVars
 
     # Call ansible-playbook instead of include_role to workaround the bug
     - name: Create not existing CTs
-      shell: cd {{ ansibleHome }}; ansible-playbook {{ ansibleHome }}/no_prompt_create_lxc_container.yml --extra-vars "containerName={{ item | regex_replace('\.lxc$', '') }} containerGroups='{{ hostvars[item].group_names | to_yaml }}' distribName='{{ hostvars[item].distribName }}' distribRelease='{{ hostvars[item].distribRelease }}' portsMapping='{{ (hostvars[item].ctPortsMapping | default({})) | to_yaml }}' volumeRules='{{ (hostvars[item].ctVolumeRules | default({})) | to_yaml }}'"
+      shell: cd {{ ansibleHome }}; ansible-playbook {{ ansibleHome }}/no_prompt_create_lxc_container.yml --extra-vars "containerName={{ item | regex_replace('\\.lxc$', '' ) }} containerGroups='{{ infraHosts[item] | to_yaml }}' distribName='{{ hostvars[item].distribName }}' distribRelease='{{ hostvars[item].distribRelease }}' portsMapping='{{ (hostvars[item].ctPortsMapping | default({})) | to_yaml }}' volumeRules='{{ (hostvars[item].ctVolumeRules | default({})) | to_yaml }}'"
+      delegate_to: localhost
+      become: yes
+      become_user: "{{ controllerUser }}"
       register: result
       with_items: "{{ missingCts }}"
 
@@ -131,7 +140,6 @@
       lxc_container:
         name: "{{ item | regex_replace('\\.lxc$', '' ) }}"
         state: started
-      delegate_to: "{{ lxcMainHost }}"
       become: yes
       become_user: "{{lxcUser}}"
       with_items: "{{ presentCts }}"
@@ -149,6 +157,4 @@
     - name: Refresh inventory
       meta: refresh_inventory
 
-
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2
-

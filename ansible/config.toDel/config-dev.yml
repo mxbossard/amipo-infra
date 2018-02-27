@@ -21,4 +21,4 @@ lxcContainerRepo: /home/{{lxcUser}}/.local/share/lxc
 
 # Read proxy config from a script
 proxyConfigScriptPath: /etc/profile.d/proxy.sh
-proxyConfig: "{{ lookup('file', proxyConfigScriptPath) | regex_replace('\\n', '; ') + ';' | regex_replace(';\\s*;', ';') | regex_replace('^;$', '') }}"
+proxyConfig: "{{ (lookup('file', proxyConfigScriptPath) + ';') | regex_replace('\\n', '; ') | regex_replace(';+', ';') | regex_replace('^;$', '') }}"

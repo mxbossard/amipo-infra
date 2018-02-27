@@ -72,7 +72,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       ansible.compatibility_mode = "2.0"
       ansible.provisioning_path = "/home/vagrant/ansible"
       ansible.config_file = "ansible.cfg"
-      ansible.inventory_path = "dev_inventory"
+      ansible.inventory_path = "development_inventory"
       ansible.playbook = "setup_ansible_controller.yml"
       ansible.limit = "all"
     end

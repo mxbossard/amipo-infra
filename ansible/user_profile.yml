@@ -7,7 +7,7 @@
   become: yes
 
   vars_files:
-    - amipo_user.yml
+    - amipo_user_list.yml
 
   tasks:
     - debug: var=users

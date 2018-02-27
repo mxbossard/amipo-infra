@@ -1,8 +1,0 @@
----
-
-distribName: alpine
-distribRelease: 3.7
-
-ctPortsMapping: {}
-ctVolumeRules: {}
-

@@ -16,11 +16,11 @@ def parse_args():
     group.add_argument('--host')
     return parser.parse_args()
 
-#def addLxcSuffix(name):
-#    return name + ".lxc"
-#
-#def removeLxcSuffix(name):
-#    return re.match(r'(.*?)(\.lxc)?$', name).group(1)
+def addLxcSuffix(name):
+    return name + ".lxc"
+
+def removeLxcSuffix(name):
+    return re.match(r'(.*?)(\.lxc)?$', name).group(1)
 
 def list_lxc_groups(availableLxcHosts):
     file = None
@@ -29,8 +29,8 @@ def list_lxc_groups(availableLxcHosts):
         groupsMap = {}
         for line in file.readlines():
             row = line.split(':')
-            #host = addLxcSuffix(row[0]).rstrip()
-            host = row[0].rstrip()
+            host = addLxcSuffix(row[0]).rstrip()
+            #host = row[0].rstrip()
             groups = row[1].split(',')
             if host in availableLxcHosts:
                 for group in groups:
@@ -51,15 +51,15 @@ def list_running_hosts():
     hosts = []
     status = subprocess.check_output(cmd.split()).rstrip()
     for host in status.split('\n'):
-        #hosts.append(addLxcSuffix(host))
-        hosts.append(host)
+        hosts.append(addLxcSuffix(host))
+        #hosts.append(host)
 
     return hosts
 
 
 def get_host_details(host):
-    #cmd = "lxc-info -n {} -iH".format(removeLxcSuffix(host))
-    cmd = "lxc-info -n {} -iH".format(host)
+    cmd = "lxc-info -n {} -iH".format(removeLxcSuffix(host))
+    #cmd = "lxc-info -n {} -iH".format(host)
     ip = subprocess.check_output(cmd.split()).rstrip()
     return {'ansible_host': ip}
 

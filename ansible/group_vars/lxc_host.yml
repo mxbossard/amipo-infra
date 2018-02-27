@@ -1,0 +1,14 @@
+---
+
+# FS Config
+lxcVgName: amipo_vg
+lxcLvName: lxc_lv
+lxcLvSize: 4G
+lxcVolPath: /home/lxc
+
+# Setup config
+lxcContainerRepo: /home/{{ lxcUser }}/.local/share/lxc
+lxcVolumesDir: "{{ lxcHome }}/volumes"
+lxcAnsibleGroupsFile: "{{ lxcHome }}/.ansible_groups"
+lxcIdsMapFile: "{{ lxcHome }}/.ids_map"
+

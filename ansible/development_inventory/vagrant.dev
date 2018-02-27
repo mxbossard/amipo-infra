@@ -5,6 +5,14 @@ amipo1.dev	ansible_user=vagrant ansible_private_key_file=~/.vagrantSsh/insecure_
 controller.dev
 amipo1.dev
 
+[development]
+controller.dev
+amipo1.dev
+
+[host]
+controller.dev
+amipo1.dev
+
 [lxc_host]
 amipo1.dev
 

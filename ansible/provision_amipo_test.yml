@@ -1,7 +1,7 @@
 ---
 
 - name: Provision test VMs
-  hosts: dev
+  hosts: development
   tasks:
     - debug: msg="Provision test VMs"
    

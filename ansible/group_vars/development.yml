@@ -1,0 +1,26 @@
+---
+
+# Vagrant config
+controllerIp: 192.168.56.101
+lxcHostIp: 192.168.56.111
+
+# Controller config
+controllerUser: vagrant
+controllerHome: /home/{{ controllerUser }}
+ansibleHome: "{{ controllerHome }}/ansible"
+#inventoryHome: "{{ ansibleHome }}/inventory"
+devInventory: "{{ ansibleHome }}/development_inventory"
+playbooksHome: "{{ ansibleHome }}"
+configHome: "{{ ansibleHome }}/config"
+
+# SSH config
+provisioningUser: manager
+provisioningUserUid: 2000
+provisioningKeyFilepath: "{{ controllerHome }}/.ssh/provisioning_key"
+provisioningPubKey: "{{ lookup('file', provisioningKeyFilepath + '.pub') }}"
+
+lxcContainerRepo: /home/{{lxcUser}}/.local/share/lxc
+
+# Read proxy config from a script
+proxyConfigScriptPath: /etc/profile.d/proxy.sh
+proxyConfig: "{{ (proxyConfigScriptPath | exists) | ternary(lookup('file', proxyConfigScriptPath) | regex_replace('\\n', '; ') + ';', '') | regex_replace(';;', ';') }}"

@@ -62,15 +62,12 @@ This infra code is responsible to setup the infrastructure.
 ## TODO
 
 ## TODO Vagrant
+* Réparer le provision amipo1 qui est tres lent et qui fail à auto build les conteneurs lxc avec: "skipping: no hosts matched"
 * Accelerer l'installation d'ansible dans la vm controller
 * Utiliser une cle ssh perso plutot que la cle insecure_private_key de vagrant ?
 
 
 ## TODO Ansible
-* Verifier l'utilisation actuelle des group_vars.
-* Il faudrait que 2 groupes distincts puissent definir chacun leur volumes.
-* Il y a confusion entre les noms et les groupes pour les conteneurs. le ct front a pour nom front dans le groupe front. Cela n'est pas clair du coup pour le debug. Il pourrait etre judicieux de rajouter le suffix .lxc dans le nom du conteneur.
-* Il faudrait se passer des fichiers dans config/
 * Fournir un conteneur Frontal nginx prod ready
 * Fournir un conteneur Accueil ssh (lobby) prod ready
 * Passer des patterns complexes (avec or, and, ...) au builder de conteneur
@@ -114,7 +111,7 @@ sudo find /etc/nginx -type d -exec sudo setfacl -R -m d:g:adm:rwX {} \;
 * L'accent est mis sur la simplicité d'utilisation des conteneurs.
 * L'infrastructure devrait etre décrite de maniere similaire pour chaque environnement.
 * Les differences entre les environnements devraient etre faible.
-* Les VMs de l'environnement de dev provisionnés par vagrant sont accessibles avec le suffixe .dev
+* Les VMs de l'environnement de dev (development) provisionnés par vagrant sont accessibles avec le suffixe .dev
 * Les conteneurs LXC sont accessibles avec le suffixe .lxc
 * L'environnement de dev doit pouvoir etre construit par morceau pour faciliter l'usage : par defaut lors du premier déploiement de l'environnement de dev, seul un petit noyau de l'infra est construit.
 * L'inventory ansible de dev n'est pas statique du fait de cette construction par morceau. Seul les machines (conteneurs) construits sont listées par un inventory dynamique.
