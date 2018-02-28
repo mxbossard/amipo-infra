@@ -69,7 +69,12 @@ def main():
     if args.list:
         hosts = list_running_hosts()
         groupsMap = list_lxc_groups(hosts)
-        #groupsMap["lxc"] = hosts
+        groupsMap["lxc"] = hosts
+        # Add details _meta data to speed up dynamic inventory
+        hostvars = {}
+        for host in hosts:
+            hostvars[host] = get_host_details(host)
+        groupsMap['_meta'] = {'hostvars': hostvars}
         json.dump(groupsMap, sys.stdout)
     else:
         details = get_host_details(args.host)
