@@ -72,6 +72,7 @@ install_vagrant() {
 	do
 		echo "Downloading of $vagrantBaseUrl/$file ..."
 		test -f $file || curl -OS "$vagrantBaseUrl/$file"
+		chmod a+r $file
 	done
 
 	echo "Verifying Vagrant checksum..."
@@ -90,13 +91,14 @@ install_vagrant() {
 		sudo dpkg -i $vagrantBinary
 	elif [ "$vagrantPackageType" = "rpm" ]
 	then
-		sudo rpm -ivh $vagrantBinary
+		sudo rpm -ivh $tmpDir/$vagrantBinary
 	fi
 
+	vagrant plugin repair || yes | vagrant plugin expunge --reinstall
+
+	cd
 	rm -- $tmpDir/$vagrantSignature $tmpDir/$vagrantChecksum $tmpDir/$vagrantBinary
 	rmdir -- $tmpDir
-
-	vagrant plugin expunge --reinstall
 }
 
 install_required_packages() {
@@ -133,7 +135,7 @@ configure_dnsmasq() {
 
 build_local_env() {
 	test -d $localDir || mkdir $localDir
-	test -f $localDir/provisioning_key || ssh-keygen -f $localDir/provisioning_key -t rsa -b 4096
+	test -f $localDir/provisioning_key || ssh-keygen -f $localDir/provisioning_key -t rsa -b 4096 -q -N ''
 
 }
 
