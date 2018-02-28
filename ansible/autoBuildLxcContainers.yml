@@ -3,7 +3,7 @@
 # A special playbook responsible to build LXC containers described in containerListFile. This playbook is special, because it load in the inventory the containerListFile before launching the container creation. It is separated in 3 plays, because we use a special play to filter the containers to build a "targeted subset", and then build only desired containers in the last play.
 
 - name: Load list of container
-  hosts: localhost
+  hosts: controller
   run_once: yes
 
   tasks:
@@ -34,6 +34,8 @@
     - name: Register lists of all existing CTs
       set_fact:
         allExistingCts: "{{ result.stdout_lines }}"
+      delegate_to: localhost
+      delegate_facts: True
 
     # By default container is in lxc group and in it's own group
     - name: Include infra hosts
@@ -81,7 +83,7 @@
 
 
 - name: Auto build LXC containers
-  hosts: localhost
+  hosts: controller
   run_once: yes
   gather_facts: no
   ignore_errors: no
@@ -122,10 +124,10 @@
     - name: Create not existing CTs
       shell: cd {{ ansibleHome }}; ansible-playbook {{ ansibleHome }}/no_prompt_create_lxc_container.yml --extra-vars "containerName={{ item | regex_replace('\.lxc$', '') }} containerGroups='{{ hostvars[item].group_names | to_yaml }}' distribName='{{ hostvars[item].distribName }}' distribRelease='{{ hostvars[item].distribRelease }}' portsMapping='{{ (hostvars[item].ctPortsMapping | default({})) | to_yaml }}' volumeRules='{{ (hostvars[item].ctVolumeRules | default({})) | to_yaml }}'"
       register: result
-      with_items: "{{ missingCts }}"
+      with_items: "{{ hostvars['localhost'].missingCts }}"
 
     - debug: var=result
-      when: missingCts | length > 0
+      when: hostvars['localhost'].missingCts | length > 0
 
     - name: Ensure CTs are started
       lxc_container:
@@ -134,7 +136,7 @@
       delegate_to: "{{ lxcMainHost }}"
       become: yes
       become_user: "{{lxcUser}}"
-      with_items: "{{ presentCts }}"
+      with_items: "{{ hostvars['localhost'].presentCts }}"
 
     - name: Wait for port 22 to become open and contain "OpenSSH"
       wait_for:
@@ -143,8 +145,7 @@
         search_regex: OpenSSH
         delay: 2
         timeout: 120
-      connection: local
-      with_items: "{{ presentCts + missingCts }}"
+      with_items: "{{ hostvars['localhost'].presentCts + hostvars['localhost'].missingCts }}"
 
     - name: Refresh inventory
       meta: refresh_inventory

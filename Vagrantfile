@@ -1,7 +1,6 @@
 VAGRANTFILE_API_VERSION = "2"
-VAGRANT_HOME = ".vagrant.d"
-
 vagrant_root = File.dirname(__FILE__)
+VAGRANT_HOME = "#{vagrant_root}/.vagrant.d"
 amipo_lxc_disk_file = "#{VAGRANT_HOME}/amipo1_disk_lxc.vdi"
 
 system("
