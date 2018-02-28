@@ -8,7 +8,7 @@
 *.retry
 #git
 
-ansible/dev_inventory/lxcLocalInventory.sh
+ansible/development_inventory/lxcLocalInventory.sh
 
 # Specific MBD files
 ansible/amipo_infra.inventory

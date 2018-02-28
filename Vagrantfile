@@ -1,11 +1,13 @@
 VAGRANTFILE_API_VERSION = "2"
+VAGRANT_HOME = ".vagrant.d"
 
-amipo_lxc_disk_file = "#{Dir.home}/.vagrant.d/amipo1_disk_lxc.vdi"
+vagrant_root = File.dirname(__FILE__)
+amipo_lxc_disk_file = "#{VAGRANT_HOME}/amipo1_disk_lxc.vdi"
 
 system("
     if [ #{ARGV[0]} = 'up' ]; then
         echo 'Execute vbox storages cleaning script ...'
-        ./scripts/clean_vbox_storages.sh #{amipo_lxc_disk_file}
+        #{vagrant_root}/scripts/clean_vbox_storages.sh '#{amipo_lxc_disk_file}'
     fi
 ")
 
@@ -55,10 +57,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     machine.vm.network :private_network, ip: "192.168.56.101"
 
     # Mount vagrant dir to vagrant home
-    machine.vm.synced_folder "./ansible", "/home/vagrant/ansible"
+    machine.vm.synced_folder "#{vagrant_root}/ansible", "/home/vagrant/ansible"
 
     # Copy insecure_private_key in controller guest for ansible usage
-    machine.vm.synced_folder "#{Dir.home}/.vagrant.d", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{Dir.home}/.vagrant.d/insecure_private_key"]
+    machine.vm.synced_folder "#{VAGRANT_HOME}", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{VAGRANT_HOME}/insecure_private_key"]
     #machine.vm.synced_folder "#{Dir.home}/.ssh", "/home/vagrant/.host_ssh/", type: "rsync"
 
     machine.vm.provider :virtualbox do |vb|
@@ -90,9 +92,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vb.customize ["modifyvm", :id, "--name", "amipo1"]
     end
 
-    # Execute vbox clean storage script
-    #machine.vm.provision "shell", path: "scripts/clean_vbox_storages.sh", args: amipo_lxc_disk_file
-
     # Ensure lvm2 is present in the box
     machine.vm.provision "shell", inline: "sudo apt-get --assume-yes install lvm2"
 
@@ -111,12 +110,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #machine.vm.provision "shell", path: "increase_swap.sh"
 
     # Bootstrap ansible in box
-    machine.vm.provision "shell", path: "scripts/bootstrap_ansible.sh"
+    machine.vm.provision "shell", path: "#{vagrant_root}/scripts/bootstrap_ansible.sh"
     #machine.vm.provision "shell", inline: "sudo apt install -y python2.7; test -f /usr/bin/python || ln -s /usr/bin/python2.7 /usr/bin/python"
 
     machine.vm.provision "ansible" do |ansible|
-      ansible.playbook_command = "scripts/ansible-playbook"
-      ansible.playbook = "ansible/provision_amipo_test.yml"
+      ansible.playbook_command = "#{vagrant_root}/scripts/ansible-playbook"
+      ansible.playbook = "#{vagrant_root}/ansible/provision_amipo_test.yml"
       ansible.verbose = true
       ansible.limit = "all"
     end
