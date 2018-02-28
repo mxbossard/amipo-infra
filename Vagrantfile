@@ -1,7 +1,7 @@
 VAGRANTFILE_API_VERSION = "2"
 vagrant_root = File.dirname(__FILE__)
-VAGRANT_HOME = "#{vagrant_root}/.vagrant.d"
-amipo_lxc_disk_file = "#{VAGRANT_HOME}/amipo1_disk_lxc.vdi"
+vagrant_home = "#{Dir.home}/.vagrant.d"
+amipo_lxc_disk_file = "#{vagrant_home}/amipo1_disk_lxc.vdi"
 
 system("
     if [ #{ARGV[0]} = 'up' ]; then
@@ -59,7 +59,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     machine.vm.synced_folder "#{vagrant_root}/ansible", "/home/vagrant/ansible"
 
     # Copy insecure_private_key in controller guest for ansible usage
-    machine.vm.synced_folder "#{VAGRANT_HOME}", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{VAGRANT_HOME}/insecure_private_key"]
+    machine.vm.synced_folder "#{vagrant_home}", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{vagrant_home}/insecure_private_key"]
     #machine.vm.synced_folder "#{Dir.home}/.ssh", "/home/vagrant/.host_ssh/", type: "rsync"
 
     machine.vm.provider :virtualbox do |vb|
@@ -74,7 +74,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       ansible.provisioning_path = "/home/vagrant/ansible"
       ansible.config_file = "ansible.cfg"
       ansible.inventory_path = "development_inventory"
-      ansible.playbook = "setup_ansible_controller.yml"
+      #ansible.playbook = "#{vagrant_root}/ansible/setup_ansible_controller.yml"
+      ansible.playbook = "/home/vagrant/ansible/setup_ansible_controller.yml"
       ansible.limit = "all"
     end
   end
