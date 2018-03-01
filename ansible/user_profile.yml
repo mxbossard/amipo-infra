@@ -10,7 +10,23 @@
     - amipo_user_list.yml
 
   tasks:
-    - debug: var=users
+    #- debug: var=item.0
+    #  with_subelements:
+    #    - "{{ users }}"
+    #    - "groups"
+
+    - name: Create explicitly defined groups
+      group:
+        name: "{{ item.key }}"
+        gid: "{{ item.value['gid'] }}"
+      with_dict: "{{ user_groups }}"
+
+    - name: Create implicit groups 
+      group:
+        name: "{{ item.1 }}"
+      with_subelements:
+        - "{{ users }}"
+        - "groups"
 
     - name: Create users
       user:
@@ -18,13 +34,24 @@
         groups: "{{ item.value.groups }}"
         uid: "{{ item.value.uid }}"
         home: "{{ item.value.homeDir }}"
+        shell: "{{ item.value.shell | default('/bin/bash') }}"
         generate_ssh_key: yes
+      with_dict: "{{ users }}"
+
+    - name: Create authorized_keys file
+      copy:
+        dest: "{{ item.value.homeDir | default('/home/' + item.key) }}/.ssh/authorized_keys"
+        content: ""
+        force: no
       with_dict: "{{ users }}"
 
     - name: Copy authorized key
       lineinfile:
-        dest: "~/.ssh/authorized_keys"
+        dest: "{{ item.value.homeDir | default('/home/' + item.key) }}/.ssh/authorized_keys"
         line: "{{ item.value.ssh_pub }}"
+        mode: 0644
+        owner: "{{ item.key }}"
+        group: "{{ item.key }}"
       with_dict: "{{ users }}"
 
   handlers:
