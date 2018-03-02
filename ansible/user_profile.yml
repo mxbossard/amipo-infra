@@ -3,7 +3,7 @@
 # This playbook is responsible to deploy user profiles on hosts. 
 
 - name: Deploy user profiles
-  hosts: lobby #user_profile
+  hosts: user_layer
   become: yes
 
   vars_files:
@@ -14,6 +14,11 @@
     #  with_subelements:
     #    - "{{ users }}"
     #    - "groups"
+
+    - name: Add shadow package on Alpine
+      apk:
+        name: shadow
+      when: ansible_distribution == 'Alpine'
 
     - name: Create explicitly defined groups
       group:
@@ -34,7 +39,8 @@
         groups: "{{ item.value.groups }}"
         uid: "{{ item.value.uid }}"
         home: "{{ item.value.homeDir }}"
-        shell: "{{ item.value.shell | default('/bin/bash') }}"
+        #shell: "{{ item.value.shell | default('/bin/bash') }}"
+        shell: "/bin/sh"
         generate_ssh_key: yes
       with_dict: "{{ users }}"
 

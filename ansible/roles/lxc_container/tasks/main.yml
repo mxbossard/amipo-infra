@@ -88,7 +88,8 @@
   become_user: "{{ lxcUser }}"
   retries: 2
   delay: 3
-  when: distribName == "alpine"
+  #when: distribName == "alpine"
+  when: ansible_distribution == "Alpine"
   tags: init
 
 - name: Initialize Debian container
@@ -100,7 +101,8 @@
   become_user: "{{ lxcUser }}"
   retries: 2
   delay: 3
-  when: distribName == "debian" or distribName == "ubuntu"
+  #when: distribName == "debian" or distribName == "ubuntu"
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
   tags: init
 
 - name: Initialize container
@@ -112,7 +114,8 @@
   become_user: "{{ lxcUser }}"
   retries: 2
   delay: 3
-  when: distribName == "debian" or distribName == "ubuntu" or distribName == "alpine"
+  #when: distribName == "debian" or distribName == "ubuntu" or distribName == "alpine"
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu" or ansible_distribution == "Alpine"
   tags: init
 
 - name: Discover CT IP
