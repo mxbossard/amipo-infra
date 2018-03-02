@@ -45,13 +45,15 @@ install_packages() {
 	if [ "$vagrantPackageType" = "deb" ]
 	then
 		# debian system
-		sudo apt update -y --force-yes
-		sudo apt install -y --force-yes $pkgs
+		sudo apt update -y
+		sudo apt upgrade -y
+		sudo apt install -y $pkgs
 	elif [ "$vagrantPackageType" = "rpm" ]
 	then
 		# redhat system
 		# FIXME are they the good packages names ?
 		sudo yum update -y
+		sudo yum upgrade -y
 		sudo yum install -y $pkgs
 	fi
 }
