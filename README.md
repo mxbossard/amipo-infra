@@ -63,7 +63,6 @@ This infra code is responsible to setup the infrastructure.
 
 ## TODO Vagrant
 * Réparer le provision amipo1 qui est tres lent et qui fail à auto build les conteneurs lxc avec: "skipping: no hosts matched"
-* Accelerer l'installation d'ansible dans la vm controller
 * Utiliser une cle ssh perso plutot que la cle insecure_private_key de vagrant ?
 
 

@@ -5,4 +5,6 @@ source $scriptDir/env_ansible.sh ansible-playbook $@
 
 echo "Cleaned command: [$ansible_cleaned_command]"
 
-vagrant ssh --tty -c "$ansible_cleaned_command" controller
+#vagrant ssh --tty -c "$ansible_cleaned_command" controller
+ssh -i ~/.vagrant.d/insecure_private_key -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ControlPersist=1s -o ServerAliveInterval=2 -o ServerAliveCountMax=5 vagrant@controller.dev "/bin/sh -c \"cd ansible; $ansible_cleaned_command\""
+#ssh -i ~/.vagrant.d/insecure_private_key -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ControlPersist=1s -o ServerAliveInterval=2 -o ServerAliveCountMax=5 vagrant@controller.dev "/bin/sh -c \"cd ansible; ANSIBLE_FORCE_COLOR=true ansible-playbook $@\""
