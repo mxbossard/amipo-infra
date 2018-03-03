@@ -53,10 +53,10 @@ You should be able to ping amipo1.dev and controller.dev from your host computer
 
 ## User Guide
 This infra code is responsible to setup the infrastructure.
-See [User guide](./docs/user_guide.md).
+See [User guide](docs/user_guide.md).
 
 ## TODO
-See [Todo file](./docs/todo.md)
+See [Todo file](docs/todo.md)
 
 ## Some Documentation
 * <a href="https://help.ubuntu.com/lts/serverguide/lxc.html">Setup LXC</a>
