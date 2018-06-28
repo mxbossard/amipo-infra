@@ -26,35 +26,52 @@
         gid: "{{ item.value['gid'] }}"
       with_dict: "{{ user_groups }}"
 
-    - name: Create implicit groups 
-      group:
-        name: "{{ item.1 }}"
-      with_subelements:
-        - "{{ users }}"
-        - "groups"
+    #- name: Create implicit groups 
+    #  group:
+    #    name: "{{ item.1 }}"
+    #  with_subelements:
+    #    - "{{ users }}"
+    #    - "groups"
 
     - name: Create users
       user:
         name: "{{ item.key }}"
-        groups: "{{ item.value.groups }}"
-        uid: "{{ item.value.uid }}"
-        home: "{{ item.value.homeDir }}"
+        groups: "{{ item.value.groups | default([]) }}"
+        uid: "{{ item.value.uid | default('') }}"
+        home: "{{ item.value.homeDir | default('/home/' + item.key) }}"
         #shell: "{{ item.value.shell | default('/bin/bash') }}"
         shell: "/bin/sh"
-        generate_ssh_key: yes
+        generate_ssh_key: no
       with_dict: "{{ users }}"
 
     - name: Create authorized_keys file
       copy:
         dest: "{{ item.value.homeDir | default('/home/' + item.key) }}/.ssh/authorized_keys"
         content: ""
-        force: no
+        force: yes
+        mode: 0644
+        owner: "{{ item.key }}"
+        group: "{{ item.key }}"
       with_dict: "{{ users }}"
 
-    - name: Copy authorized key
+    - name: Set internal authorized key
+      shell: /bin/sh -c "cd {{ item.value.homeDir | default('/home/' + item.key) }}; echo .ssh/id_rsa.pub >> .ssh/authorized_keys"
+      with_dict: "{{ users }}"
+
+
+- name: Copy user public key in lobby
+  hosts: lobby
+  become: yes
+
+  vars_files:
+    - amipo_user_list.yml
+
+  tasks:
+    - name: Authorize user public key
       lineinfile:
         dest: "{{ item.value.homeDir | default('/home/' + item.key) }}/.ssh/authorized_keys"
         line: "{{ item.value.ssh_pub }}"
+        insertafter: EOF
         mode: 0644
         owner: "{{ item.key }}"
         group: "{{ item.key }}"

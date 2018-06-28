@@ -46,7 +46,7 @@ Previous build may interfer with new ones. You can clean vagrant env by removing
 * .vagrant/machines/*
 * ~/VirtualBox VMs/*
 
-The additional drive on which are installed LXC is persistent. It is not destroy on vagrant destroy. To destroy it, you can remove the file located in .vagrant.d/amipo1_disk_lxc.vdi but only when vagrant box amipo1 is halted or destoryed.
+The additional drive on which are installed LXC is persistent. It is not destroy on vagrant destroy. To destroy it, you can remove the file located in `rm ~/.vagrant.d/amipo1_disk_lxc.vdi` but only when vagrant box amipo1 is halted or destoryed.
 
 ### Unable to resolve vagrant box names
 You should be able to ping amipo1.dev and controller.dev from your host computer. If not dnsmasq is probably badly configured. You could try a `sudo service dnsmasq restart`.

@@ -1,11 +1,15 @@
 ---
 # List of Amipo users with their groups. Should be a secret. Could contain a group config by container, could contain a ssh pub key.
+# A user NEED an uid and NEED a ssh pub key
+# All groups NEED to be defined.
 
 user_groups:
   foo:
     gid: 2011
   bar:
     gid: 2012
+  baz:
+    gid: 2016
 
 users:
   max:
@@ -17,6 +21,9 @@ users:
   b01:
     uid: 2101
     homeDir: "/home/b01"
-    groups: [admin, corsair]
+    groups: [admin, corsair, foo, bar, baz]
     ssh_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDJzWyirVsGYnumcs2DqM3xtDX6yO1GNg+XiwVSDMvldxL0RyPMw2tjJs+WxqrCZMDLOBB5tVqfptuY/brjdgu3NQ0kwecAZ/HMqCXEgx9aGXRFUIC22Rh4AJj67AMnx8t3p9qc0Kn4awaHvNG+9M1lQvNIFdhi55LGvEbnp8xLAIWQO1q4flXBOuZstueII1G2eQqUvzKT3uRZFL6LNrBF12QYWJNylprouLzUpyxbr25ywB79Wwg5SqJsePNeBSFxMNgMlIT2iTDHyNvPTiez6NThkMQVZJMBemSOhwCgi9gs7d3+mi+ufPDGo1zE6j/TAO+M/f2ILbVTbt4jQt35"
 
+  alex:
+    uid: 2102
+    ssh_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDJzWyirVsGYnumcs2DqM3xtDX6yO1GNg+XiwVSDMvldxL0RyPMw2tjJs+WxqrCZMDLOBB5tVqfptuY/brjdgu3NQ0kwecAZ/HMqCXEgx9aGXRFUIC22Rh4AJj67AMnx8t3p9qc0Kn4awaHvNG+9M1lQvNIFdhi55LGvEbnp8xLAIWQO1q4flXBOuZstueII1G2eQqUvzKT3uRZFL6LNrBF12QYWJNylprouLzUpyxbr25ywB79Wwg5SqJsePNeBSFxMNgMlIT2iTDHyNvPTiez6NThkMQVZJMBemSOhwCgi9gs7d3+mi+ufPDGo1zE6j/TAO+M/f2ILbVTbt4jQt35"
