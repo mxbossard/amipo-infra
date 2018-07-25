@@ -1,3 +1,0 @@
-tmpLxcConfigFile: /tmp/lxc-{{ctName}}.conf
-lxcContainerRepo: /home/{{lxcUser}}/.local/share/lxc
-

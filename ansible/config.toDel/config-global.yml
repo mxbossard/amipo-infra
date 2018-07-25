@@ -1,6 +1,0 @@
-envName: dev
-
-ansibleHome: /home/vagrant/ansible
-inventoryHome: "{{ ansibleHome }}/{{ envName }}_inventory"
-playbooksHome: "{{ ansibleHome }}"
-configHome: "{{ ansibleHome }}/config"
