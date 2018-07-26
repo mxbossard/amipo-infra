@@ -2,3 +2,4 @@
 
 envName: development
 
+vagrantHostDir: "/vagrant"
