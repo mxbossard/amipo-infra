@@ -1,0 +1,61 @@
+---
+
+- name: Provision controller
+  hosts: controller
+  become: yes
+
+  vars:
+    provisioningKeyFilepath: "{{ controllerHome }}/.ssh/provisioning_key"
+    hostSshDir: "{{ controllerHome }}/.host_ssh"
+
+  tasks:
+    - name: Install some packages
+      apt:
+        name: ["dnsmasq"]
+      #  name: "{{ item }}"
+      #with_items:
+      #  - dnsmasq
+
+    - name: Add cd ansible to .profile file
+      lineinfile: 
+        path: "{{ controllerHome }}/.profile" 
+        line: "cd {{ ansibleHome }}" 
+
+    - name: Update PATH
+      lineinfile: 
+        path: "{{ controllerHome }}/.profile" 
+        line: "PATH=$PATH:/vagrant/scripts" 
+
+    - name: Build provisioning ssh key pair
+      shell: "/bin/bash -c 'ssh-keygen -b 4096 -t rsa -f {{ provisioningKeyFilepath }} -q -N \"\"'"
+      args:
+        creates: "{{ provisioningKeyFilepath }}"
+      become_user: "{{ controllerUser }}"
+
+    - name: Copy ssh config
+      template:
+        src: ssh_config.j2
+        dest: "{{ controllerHome }}/.ssh/config"
+        owner: "{{ controllerUser }}"
+        group: "{{ controllerUser }}"
+        mode: 0600
+
+    - name: Add route in .profile
+      lineinfile: 
+        path: "{{ controllerHome }}/.profile"
+        regexp: "ip route add {{ lxcSubnet }}"
+        line: "ip route show | grep '{{ lxcSubnet }}' > /dev/null || sudo ip route add {{ lxcSubnet }} via {{ lxcHostIp }} || true" 
+
+    - name: Create proxy config file if it does not exists
+      copy:
+        content: ""
+        dest: "{{ proxyConfigScriptPath }}"
+        mode: 0644
+        force: no
+
+  handlers:
+    - name: Restart dnsmasq
+      service:
+        name: dnsmasq
+        state: restarted
+

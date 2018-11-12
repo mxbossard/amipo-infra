@@ -4,8 +4,10 @@
 
 # Config
 VAGRANT_REPO_URL="https://releases.hashicorp.com/vagrant"
-VAGRANT_VERSION="2.0.2"
+VAGRANT_VERSION="2.2.0"
 VAGRANT_PLUGINS="landrush vagrant-persistent-storage"
+
+VAGRANT_SSH_KEY_NAME="vagrant_ssh_key"
 
 vagrantPackageType="$1" # ether dep or rpm
 vagrantBaseUrl="$VAGRANT_REPO_URL/$VAGRANT_VERSION"
@@ -96,8 +98,6 @@ install_vagrant() {
 		sudo rpm -ivh $tmpDir/$vagrantBinary
 	fi
 
-	vagrant plugin repair || yes | vagrant plugin expunge --reinstall
-
 	cd
 	rm -- $tmpDir/$vagrantSignature $tmpDir/$vagrantChecksum $tmpDir/$vagrantBinary
 	rmdir -- $tmpDir
@@ -118,26 +118,29 @@ install_required_packages() {
 }
 
 install_vagrant_plugins() {
-	pluginList=$(vagrant plugin list)
+	echo "Updating or Repairing Vagrant plugins..."
+	vagrant plugin update || output=$( vagrant plugin repair 2>&1 )
+	echo $output | grep -i "failed" > /dev/null || echo $output
+	echo $output | grep -i "failed" > /dev/null && yes | vagrant plugin expunge --reinstall
+
+	pluginList=$( vagrant plugin list )
 	for pluginName in $VAGRANT_PLUGINS
 	do
 		echo "$pluginList" | grep -e "^$pluginName " || vagrant plugin install $pluginName
 	done
-
-	vagrant plugin update
 }
 
 configure_dnsmasq() {
-	dnsmasq -v || echo "Installing dnsmasq..." && install_packages dnsmasq 
+	dnsmasq -v || ( echo "Installing dnsmasq..." && install_packages dnsmasq )
 
 	# Will not work everywhere !
 	dnsConfFile="/etc/dnsmasq.d/vagrant-landrush"
-	test -f $dnsConfFile || sudo /bin/sh -c "echo 'server=/dev/127.0.0.1#10053' > $dnsConfFile" && sudo service dnsmasq restart
+	test -f $dnsConfFile || ( sudo /bin/sh -c "echo 'server=/dev/127.0.0.1#10053' > $dnsConfFile" && sudo service dnsmasq restart )
 }
 
 build_local_env() {
 	test -d $localDir || mkdir $localDir
-	test -f $localDir/provisioning_key || ssh-keygen -f $localDir/provisioning_key -t rsa -b 4096 -q -N ''
+	test -f $localDir/$VAGRANT_SSH_KEY_NAME || ( echo "We will generate a provisioning key." ; ssh-keygen -f $localDir/$VAGRANT_SSH_KEY_NAME -t rsa -b 4096 -q -N '' )
 
 }
 
@@ -155,7 +158,7 @@ install_vagrant
 install_vagrant_plugins
 
 # Install and configure dnsmasq
-configure_dnsmasq
+#configure_dnsmasq
 
 # Build local env
 build_local_env

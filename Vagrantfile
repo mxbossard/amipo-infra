@@ -1,25 +1,35 @@
 VAGRANTFILE_API_VERSION = "2"
+
 vagrant_root = File.dirname(__FILE__)
 vagrant_home = "#{Dir.home}/.vagrant.d"
-amipo_lxc_disk_file = "#{vagrant_home}/amipo1_disk_lxc.vdi"
+amipo1_extra_disk_filepath = "#{vagrant_home}/amipo1_extra_disk.vdi"
+
+ssh_private_key_path = "#{vagrant_root}/.amipoLocal/vagrant_ssh_key"
+
+host_ip = "192.168.56.1"
+controller_ip = "192.168.56.101"
+amipo1_ip = "192.168.56.111"
+
+proxy_http_url = "http://#{host_ip}:3128/"
+proxy_https_url = proxy_http_url
 
 system("
     if [ #{ARGV[0]} = 'up' ]; then
         echo 'Execute vbox storages cleaning script ...'
-        #{vagrant_root}/scripts/clean_vbox_storages.sh '#{amipo_lxc_disk_file}'
+        #{vagrant_root}/scripts/clean_vbox_storages.sh '#{amipo1_extra_disk_filepath}'
     fi
 ")
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Use the same key for each machine
   config.ssh.insert_key = false
-  #config.ssh.private_key_path = "ansible/.ssh/vagrant_ssh_key"
+  #config.ssh.private_key_path = ssh_private_key_path
 
   # Enable ssh agent forwarding
   config.ssh.forward_agent = true
 
-  config.vm.box = "ubuntu/xenial64"
-  #config.vm.box = "debian/contrib-stretch64"
+  #config.vm.box = "ubuntu/xenial64"
+  config.vm.box = "debian/contrib-stretch64"
 
   # Enable vagrant plugin landrush to help vagrant boxes dns to resolve box names
   config.landrush.enabled = true
@@ -30,8 +40,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Config proxy if a proxy is used
   if Vagrant.has_plugin?("vagrant-proxyconf")
-    config.proxy.http     = "http://192.168.56.1:3128/"
-    config.proxy.https    = "http://192.168.56.1:3128/"
+    config.proxy.http     = proxy_http_url
+    config.proxy.https    = proxy_https_url
     config.proxy.no_proxy = "localhost,127.0.0.1,.dev,.lxc"
   end
 
@@ -48,19 +58,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.customize ["modifyvm", :id, "--memory", 512]
   end
 
-  # VM of an AMIPO controller managing deployment.
+  # VM Controller.
   config.vm.define "controller" do |machine|
     machine.vm.hostname = "controller.dev"
 
     # Define a private IP
-    machine.vm.network :private_network, ip: "192.168.56.101"
+    machine.vm.network :private_network, ip: "#{controller_ip}"
 
     # Mount vagrant dir to vagrant home
     machine.vm.synced_folder "#{vagrant_root}/ansible", "/home/vagrant/ansible"
 
-    # Copy insecure_private_key in controller guest for ansible usage
+    # Copy insecure_private_key in controller to allow provide large ssh access from controller on all Vagrant boxes. Usefull for debugging.
     machine.vm.synced_folder "#{vagrant_home}", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{vagrant_home}/insecure_private_key"]
-    #machine.vm.synced_folder "#{Dir.home}/.ssh", "/home/vagrant/.host_ssh/", type: "rsync"
 
     machine.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", 256]
@@ -74,18 +83,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       ansible.provisioning_path = "/home/vagrant/ansible"
       ansible.config_file = "ansible.cfg"
       ansible.inventory_path = "development_inventory"
-      #ansible.playbook = "#{vagrant_root}/ansible/setup_ansible_controller.yml"
-      ansible.playbook = "/home/vagrant/ansible/setup_ansible_controller.yml"
+      ansible.playbook = "/home/vagrant/ansible/provision_controller.yml"
       ansible.limit = "all"
     end
   end
 
-  # VM of an AMIPO host managing LXC containers
+  # VM Amipo1
   config.vm.define "amipo1" do |machine|
     machine.vm.hostname = "amipo1.dev"
     
     # Define a private IP
-    machine.vm.network :private_network, ip: "192.168.56.111"
+    machine.vm.network :private_network, ip: "#{amipo1_ip}"
 
     machine.vm.provider :virtualbox do |vb|
       # Change vm ID, needed for storage
@@ -98,7 +106,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Add an LVM storage for LXC
     machine.persistent_storage.enabled = true
     machine.persistent_storage.partition = true
-    machine.persistent_storage.location = amipo_lxc_disk_file
+    machine.persistent_storage.location = amipo1_extra_disk_filepath
     machine.persistent_storage.size = 5000
     machine.persistent_storage.diskdevice = '/dev/sdc'
     machine.persistent_storage.mountname = 'lxc_lv'
