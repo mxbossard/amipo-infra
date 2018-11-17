@@ -4,10 +4,16 @@
 
 # Config
 VAGRANT_REPO_URL="https://releases.hashicorp.com/vagrant"
-VAGRANT_VERSION="2.2.0"
-VAGRANT_PLUGINS="landrush vagrant-persistent-storage"
+#VAGRANT_VERSION="2.1.5"
+VAGRANT_VERSION="2.2.1"
+VAGRANT_PLUGINS="landrush vagrant-persistent-storage vagrant-hostsupdater vagrant-vbguest"
 
 VAGRANT_SSH_KEY_NAME="vagrant_ssh_key"
+
+VIRTUALBOX_REPO_URL="https://download.virtualbox.org/virtualbox"
+#VIRTUALBOX_VERSION="5.1.38"
+VIRTUALBOX_VERSION="5.2.22"
+VIRTUALBOX_DISTRIB="Ubuntu~trusty_amd64"
 
 vagrantPackageType="$1" # ether dep or rpm
 vagrantBaseUrl="$VAGRANT_REPO_URL/$VAGRANT_VERSION"
@@ -15,16 +21,20 @@ vagrantSignature="vagrant_${VAGRANT_VERSION}_SHA256SUMS.sig"
 vagrantChecksum="vagrant_${VAGRANT_VERSION}_SHA256SUMS"
 vagrantBinary="vagrant_${VAGRANT_VERSION}_x86_64.$vagrantPackageType"
 
+virtualboxPackageType="$1" # ether dep or rpm
+virtualboxBaseUrl="$VIRTUALBOX_REPO_URL/$VIRTUALBOX_VERSION"
+virtualboxChecksum="SHA256SUMS"
+
 projectDir="$(dirname $(readlink -f $0))"
 localDir="$projectDir/.amipoLocal"
 
 usage() {
-	echo "usage: $0 package"
-	echo "where package is ether deb or rpm"
+	echo "usage: $0 PackageType"
+	echo "where must be deb for now"
 	exit 1
 }
 
-if [ "$vagrantPackageType" != "deb" ] && [ "$vagrantPackageType" != "rpm" ]
+if [ "$vagrantPackageType" != "deb" ] #&& [ "$vagrantPackageType" != "rpm" ]
 then
 	usage
 fi
@@ -60,6 +70,61 @@ install_packages() {
 	fi
 }
 
+download_file() {
+	sourceUrl="$1"
+	destDir="$2"
+
+	sourceFile="$( basename $sourceUrl )"
+
+	cd "$destDir"
+	echo "Downloading of $sourceUrl to $( pwd ) ..."
+        test -f $destPath/$sourceFile || curl -OS "$sourceUrl"
+        chmod a+r $destDir/$sourceFile
+}
+
+install_virtualbox() {
+	# Check virtualbox version installed
+	if [ "$(vagrant -v || echo 'Nope')" = "VirtualBox $VIRTUALBOX_VERSION" ]
+	then
+		echo "VirtualBox $VIRTUALBOX_VERSION already installed."
+		return
+	else
+		echo "Installing VirtualBox $VIRTUALBOX_BINARY ..."
+	fi
+
+	tmpDir="/tmp/amipo_dl_virtualbox_$VIRTUALBOX_VERSION"
+        test -d $tmpDir || mkdir $tmpDir
+#	cd $tmpDir
+#	for file in $virtualboxChecksum $VIRTUALBOX_BINARY
+#	do
+#		echo "Downloading of $virtualboxBaseUrl/$file ..."
+#		test -f $file || curl -OS "$virtualboxBaseUrl/$file"
+#		chmod a+r $file
+#	done
+
+	download_file "$virtualboxBaseUrl/$virtualboxChecksum" "$tmpDir"
+
+	# Determine virtualbox binary file from checksum file against the distribution needed
+	virtualboxBinary="$( cat $tmpDir/$virtualboxChecksum | grep $VIRTUALBOX_DISTRIB | awk '{print $2}' | cut -c2- )"
+
+	download_file "$virtualboxBaseUrl/$virtualboxBinary" "$tmpDir"
+
+	echo "Verifying VirtualBox checksum..."
+
+	# Verify the SHASUM matches the binary.
+	grep "$virtualboxBinary" $virtualboxChecksum | shasum -a 256 -c
+
+	if [ "$vagrantPackageType" = "deb" ]
+	then
+		sudo dpkg -i $virtualboxBinary
+	elif [ "$vagrantPackageType" = "rpm" ]
+	then
+		sudo rpm -ivh $tmpDir/$virtualboxBinary
+	fi
+
+	#rm -rf -- $tmpDir
+}
+
 install_vagrant() {
 	# Check vagrant version installed
 	if [ "$(vagrant -v || echo 'Nope')" = "Vagrant $VAGRANT_VERSION" ]
@@ -67,10 +132,11 @@ install_vagrant() {
 		echo "Vagrant $VAGRANT_VERSION already installed."
 		return
 	else
-		echo "Installing Vagrant..."
+		echo "Installing Vagrant v$VAGRANT_VERSION ..."
 	fi
 
-	tmpDir="$(mktemp -d /tmp/vagrant.XXXXXXXXXX)"
+	tmpDir="/tmp/amipo_dl_vagrant_$VAGRANT_VERSION"
+        test -d $tmpDir || mkdir $tmpDir
 	cd $tmpDir
 	for file in $vagrantSignature $vagrantChecksum $vagrantBinary
 	do
@@ -108,7 +174,7 @@ install_required_packages() {
 	if [ "$vagrantPackageType" = "deb" ]
 	then
 		sudo dpkg -i $vagrantBinary
-		sudo apt install -y virtualbox-dkms virtualbox
+		sudo apt install -y virtualbox-dkms virtualbox-5.2
 	elif [ "$vagrantPackageType" = "rpm" ]
 	then
 		sudo rmp -ivh $vagrantBinary
@@ -149,7 +215,10 @@ build_local_env() {
 disclaimer
 
 # Install required packages
-install_packages curl gpgv virtualbox
+install_packages curl gpgv #virtualbox-dkms virtualbox virtualbox-qt
+
+# Try to install virtualbox
+install_virtualbox
 
 # Try to install vagrant
 install_vagrant

@@ -1,6 +1,6 @@
 ---
 
-- name: Setup front inside the CT
+- name: Setup front web server
   hosts: front
   become: yes
 

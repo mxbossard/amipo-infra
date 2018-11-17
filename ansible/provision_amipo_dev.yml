@@ -1,0 +1,10 @@
+---
+
+- name: Provision AMIPO dev machines
+  hosts: development
+  tasks:
+    - debug: msg="Provision AMIPO dev VMs"
+   
+ 
+#- import_playbook: front_nginx.yml
+

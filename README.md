@@ -16,6 +16,8 @@ We call this VMs our dev environment.
 ### Vagrant plugin used
 * landrush: a DNS to manage box names
 * vagrant-persistent-storage: add persistent storage to virtualbox VMs
+* vagrant-hostsupdater: manage host /etc/hosts file adding VMs names and IPs 
+* vagrant-vbguest: to automatically manage download and install guest additions
 
 ## "Easy" setup
 
@@ -25,11 +27,19 @@ We call this VMs our dev environment.
 `cd amipo-infra`
 
 ### Minimal installation of vagrant + virtualbox on your computer
-_Manual installation described in a further chapter_
+The purpose of using Vagrant and Virtualbox is to share the same environment. To avoid numerous bugs and long debugging nights, I recommand you to use this software version :
+* VirtualBox v5.2.22
+* Vagrant v2.2.1
+
+A setup script automate the installation of tools needed to use vagrant + virtualbox.
+A setup script is hard to build and to maintain, so it may not work on your machine, and since it require root privilege, I recommand you not to use it, unless you blindly trust me.
+You should jump to the manual installation chapter.
 
 `./installVagrant.sh`
 
 ### Creation of project local test VMs with vagrant
+Warning, use Vagrant require a good internet link, because vagrant need to download distributions, packages, and so on.
+
 `vagrant up`
 
 ### Test if the setup works: connect into VM controller
@@ -40,6 +50,12 @@ You should be able to browse <a href="http://amipo1.dev">http://amipo1.dev</a>
 `ansible all -m ping`
 
 ## Troubleshooting problems
+It seems that some bugfix of Virtualbox are needed. We recomand you tu use a 5.2+ version.
+
+### Hangs on vagrant up
+If vagrant hang during downloading or provisioning, check your network connectivity, destroy your box and retry.
+
+Check if you have sufficient space in your home directory (or where the box should be deployed). Usually, a couple of GB are required.
 
 ### Errors on vagrant up
 Previous build may interfer with new ones. You can clean vagrant env by removing some content in following directories:
@@ -47,6 +63,10 @@ Previous build may interfer with new ones. You can clean vagrant env by removing
 * ~/VirtualBox VMs/*
 
 The additional drive on which are installed LXC is persistent. It is not destroy on vagrant destroy. To destroy it, you can remove the file located in `rm ~/.vagrant.d/amipo1_disk_lxc.vdi` but only when vagrant box amipo1 is halted or destoryed.
+
+In some cases, you may need to restart the virtualbox daemon or reboot your computer.
+
+If vagrant hangs during VM boot, you may use the virtualbox gui to check if the VM is started or not. You also can try to ssh to the VM to check for authentication problems.
 
 ### Unable to resolve vagrant box names
 You should be able to ping amipo1.dev and controller.dev from your host computer. If not dnsmasq is probably badly configured. You could try a `sudo service dnsmasq restart`.
@@ -63,21 +83,18 @@ See [Todo file](docs/todo.md)
 * <a href="https://stgraber.org/2014/01/17/lxc-1-0-unprivileged-containers/">Unprivileged LXC containers</a>
 
 ### Detailed setup on debian like system (not up to date)
+_Download virtualbox from https://download.virtualbox.org/virtualbox/_
+Currently we use the 5.2.22 version.
+
+Install virtualbox with dpkg like this (on debian like system) :
+`sudo dpkg -i DEB_FILE_I_JUST_DOWNLOADED`
+
 _Download vagrant from https://www.vagrantup.com/downloads.html_
+Currently we use the 2.2.1 version.
 
-Install vagrant like this (on debian like system) : 
+Install vagrant with dpkg like this (on debian like system) : 
+`sudo dpkg -i DEB_FILE_I_JUST_DOWNLOADED`
 
-`sudo dpkg -i vagrant_2.0.1_x86_64.deb`
-
-Install virtualbox, python et pip le gestionaire de packet de python:
-
-`sudo apt install virtualbox-dkms virtualbox python2.7 python-pip libssl-dev`
-
-Installation de ansible:
-
-`sudo pip install --upgrade setuptools`
-
-`sudo pip install ansible`
-
-`vagrant plugin install landrush vagrant-persistent-storage`
+Install vagrant plugins like this :
+`vagrant plugin install landrush vagrant-persistent-storage vagrant-hostsupdater vagrant-vbguest`
 
