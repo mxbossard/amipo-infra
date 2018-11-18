@@ -84,7 +84,7 @@ See [Todo file](docs/todo.md)
 
 ### Detailed setup on debian like system (not up to date)
 _Download virtualbox from https://download.virtualbox.org/virtualbox/_
-Currently we use the 5.2.22 version.
+Currently we use the 5.2.22 version. You need to carefully select the binary which correspond to your OS (Ubuntu, Debian, CentOS, ...).
 
 Install virtualbox with dpkg like this (on debian like system) :
 `sudo dpkg -i DEB_FILE_I_JUST_DOWNLOADED`

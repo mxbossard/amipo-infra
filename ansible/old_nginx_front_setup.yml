@@ -1,0 +1,195 @@
+---
+
+- name: Setup front web server
+  hosts: front
+  become: yes
+
+#  vars_files:
+#    - config-global.yml
+#    - "{{ configHome }}/config-{{ envName }}.yml"
+#    - "{{ configHome }}/lxc.yml"
+
+  tasks:
+    - name: Install nginx and dependencies
+      apk:
+        name: "{{ item }}"
+      with_items:
+        - nginx
+        - git
+        - rsync
+        - openssl
+        - logrotate
+      notify: Reload nginx
+      tags: ["nginx"]
+
+    - name: Create config directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: nginx
+        group: nginx
+        mode: u=rwX,g=rX,o=rX
+      with_items:
+        - /etc/nginx
+        - /etc/nginx/sites-available
+        - /etc/nginx/sites-enabled
+        - /var/www/
+        - /var/www/amipo
+      notify: Reload nginx
+      tags: ["nginx"]
+
+    #- name: Download certbot
+    #  get_url:
+    #    url: https://dl.eff.org/certbot-auto
+    #    dest: /root/certbot-auto
+    #    mode: 0744
+    #  tags: ["nginx"]
+
+    - name: Checkout git submodules
+      local_action:
+        module: "shell cd /vagrant/submodules; git submodule update --init --remote --recursive {{ item }}; cd {{ item }}; git checkout master"
+        #args:
+          #creates: /vagrant/submodules/{{ item }}/.git
+      become_user: "{{ controllerUser }}"
+      register: git_result
+      failed_when: git_result | failed
+      with_items:
+        - homepage-static
+        - front-nginx-config
+      notify: Reload nginx
+      tags: ["nginx"]
+
+    - debug: var=git_result
+      tags: ["nginx"]
+
+    - name: Copy Amipo homepage
+      synchronize:
+        src: /vagrant/submodules/homepage-static/
+        dest: /var/www/amipo/homepage-static/
+        use_ssh_args: yes
+      notify: Reload nginx
+      tags: ["nginx"]
+
+    - name: Grant execution to amipo homepage compilation script
+      file: 
+        path: "/var/www/amipo/homepage-static/renameStaticContentWithHash.sh"
+        mode: 0744
+      tags: ["nginx"]
+
+    - name: Compile Amipo homepage
+      shell: "/bin/sh -c 'cd /var/www/amipo/homepage-static ./renameStaticContentWithHash.sh'"
+      tags: ["nginx"]
+
+    - name: Copy nginx config
+      synchronize:
+        src: /vagrant/submodules/front-nginx-config/
+        dest: /etc/nginx
+        use_ssh_args: yes
+      notify: Reload nginx
+      tags: ["nginx"]
+
+    - name: Remove enabled sites
+      file:
+        path: /etc/nginx/sites-enabled/
+        state: absent
+      notify: Reload nginx
+    
+    - name: Create sites-enabled dir
+      file:
+        path: /etc/nginx/sites-enabled
+        state: directory
+      notify: Reload nginx
+
+
+    - name: Config directories perms
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: nginx
+        group: nginx
+        mode: u=rwX,g=rX,o=rX
+        recurse: no
+        follow: no
+      notify: Reload nginx
+      with_items:
+        - /etc/nginx
+        - /etc/nginx/conf.d
+        - /etc/nginx/sites-available
+        #- /etc/nginx/sites-enabled
+        - /var/www/
+        - /var/www/amipo
+        - /var/www/default
+        #- /etc/letsencrypt/live/amipo.fr
+
+      tags: ["nginx"]
+
+    - name: Generate dev self signed certificate
+      #shell: "certbot certonly --webroot -w /var/www/default/ -d amipo.fr -d www.amipo.fr -d pad.amipo.fr -d wiki.amipo.fr amipo1.dev"
+      shell: "mkdir -p /etc/letsencrypt/live/{{ item }}; openssl req -x509 -newkey rsa:1024 -keyout /etc/letsencrypt/live/{{ item }}/privkey.pem -out /etc/letsencrypt/live/{{ item }}/cert.pem -days 365 -nodes -subj '/CN=amipo1.dev'; cp /etc/letsencrypt/live/{{ item }}/cert.pem /etc/letsencrypt/live/{{ item }}/fullchain.pem; cp /etc/letsencrypt/live/{{ item }}/cert.pem /etc/letsencrypt/live/{{ item }}/chain.pem"
+      args:
+        creates: /etc/letsencrypt/live/{{ item }}/cert.pem
+      notify: Reload nginx
+      with_items:
+        - amipo.fr
+        - dev.lobotomie.org
+        - pad.lobotomie.org
+        - pad.chatons.lobotomie.org
+        - wiki.chatons.lobotomie.org
+        - all_amipo.fr
+
+      tags: ["nginx"]
+
+
+#    - name: Copy nginx config
+#      template:
+#        path: "{{ item }}"
+#      with_dict: {"nginx/nginx.conf", "/etc/nginx/nginx.conf"}
+#      tags: ["nginx"]
+   
+    - name: Enable sites
+      file:
+        src: "{{ item }}"
+        dest: /etc/nginx/sites-enabled/{{ item | basename }}
+        state: link
+        #force: yes
+      notify: Reload nginx
+      with_items:
+        - /etc/nginx/sites-available/amipo_www
+
+
+    - name: Configure nginx service
+      service:
+        name: nginx
+        enabled: yes
+        state: started
+      tags: ["nginx"]
+
+    - name: Flush handlers
+      meta: flush_handlers
+
+    - name: Wait for frontal to be up
+#      local_action:
+#        module: get_url
+      get_url:
+        url: https://amipo1.dev
+        dest: /dev/null
+        validate_certs: no
+        force: yes
+      register: result
+      until: result | succeeded and result.status_code == 200 
+      retries: 60
+      delay: 1
+      delegate_to: localhost
+      tags: ["nginx", "test"]
+
+    - debug: var=result
+      tags: ["nginx"]
+
+
+  handlers:
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2
