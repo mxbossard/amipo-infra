@@ -6,5 +6,5 @@
     - debug: msg="Provision AMIPO dev VMs"
    
  
-#- import_playbook: front_nginx.yml
+- import_playbook: nginx_front_install.yml
 

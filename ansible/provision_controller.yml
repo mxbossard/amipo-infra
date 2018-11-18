@@ -10,11 +10,9 @@
 
   tasks:
     - name: Install some packages
-      apt:
-        name: ["dnsmasq"]
-      #  name: "{{ item }}"
-      #with_items:
-      #  - dnsmasq
+      package:
+        name: ["dnsmasq", "vim"]
+        state: present
 
     - name: Add cd ansible to .profile file
       lineinfile: 
@@ -25,6 +23,11 @@
       lineinfile: 
         path: "{{ controllerHome }}/.profile" 
         line: "PATH=$PATH:/vagrant/scripts" 
+
+    - name: Config ansible role path
+      lineinfile: 
+        path: "{{ controllerHome }}/.profile" 
+        line: "ANSIBLE_ROLES_PATH='{{ ansibleHome }}/roles'" 
 
     - name: Build provisioning ssh key pair
       shell: "/bin/bash -c 'ssh-keygen -b 4096 -t rsa -f {{ provisioningKeyFilepath }} -q -N \"\"'"
@@ -40,11 +43,11 @@
         group: "{{ controllerUser }}"
         mode: 0600
 
-    - name: Add route in .profile
-      lineinfile: 
-        path: "{{ controllerHome }}/.profile"
-        regexp: "ip route add {{ lxcSubnet }}"
-        line: "ip route show | grep '{{ lxcSubnet }}' > /dev/null || sudo ip route add {{ lxcSubnet }} via {{ lxcHostIp }} || true" 
+#    - name: Add route in .profile
+#      lineinfile: 
+#        path: "{{ controllerHome }}/.profile"
+#        regexp: "ip route add {{ lxcSubnet }}"
+#        line: "ip route show | grep '{{ lxcSubnet }}' > /dev/null || sudo ip route add {{ lxcSubnet }} via {{ lxcHostIp }} || true" 
 
     - name: Create proxy config file if it does not exists
       copy:
