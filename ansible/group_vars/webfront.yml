@@ -1,0 +1,6 @@
+---
+
+webServerSystemUser: "nginx"
+
+websiteDomainName: "www.amipo.dev"
+websiteDomainNameAliases: ["amipo.dev"]

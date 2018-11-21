@@ -57,6 +57,9 @@ If vagrant hang during downloading or provisioning, check your network connectiv
 
 Check if you have sufficient space in your home directory (or where the box should be deployed). Usually, a couple of GB are required.
 
+### SSH too many authentication failures
+If ansible cannot do it's job because of such an error, it may be because of the ssh-agent in a bad state. Try to restart your ssh-agent. To troubleshoot further, you may try to connect to the VM yourself from the host with the following command: `ssh -vv -i ~/.vagrant.d/insecure_private_key vagrant@MACHINE_NAME`
+
 ### Errors on vagrant up
 Previous build may interfer with new ones. You can clean vagrant env by removing some content in following directories:
 * .vagrant/machines/*

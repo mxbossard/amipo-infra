@@ -2,14 +2,12 @@ controller.dev	connection=local ansible_user=vagrant ansible_private_key_file=~/
 amipo1.dev	ansible_user=vagrant ansible_private_key_file=~/.vagrantSsh/insecure_private_key
 
 [development]
-controller.dev
 amipo1.dev
 
 [host]
-controller.dev
 amipo1.dev
 
-[front]
+[webfront]
 amipo1.dev
 
 [controller]

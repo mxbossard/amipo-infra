@@ -1,0 +1,28 @@
+
+{% for name, server in item.value.iteritems() %}
+# Server block {{ name }}
+server {
+    listen {{ server.listen }};
+    server_name {{ server.server_name | join(' ') }};
+    root {{ server.root }};
+
+  {% if server.index is defined %}
+    index {{ server.index }};
+  {% endif %}
+
+  {% if server.locations is defined %}
+  {% for path, location in server.locations.iteritems() %}
+    location "{{ path }}" {
+      {% if location.try_files is defined %}
+        try_files {{ location.try_files }};
+      {% endif %}
+      {% if location.return is defined %}
+        return {{ location.return }}; 
+      {% endif %}
+    }
+
+  {% endfor %}
+  {% endif %}
+}
+
+{% endfor %}

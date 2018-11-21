@@ -3,7 +3,7 @@
 # This playbook install nginx on front machines. 
 
 - name: Install nginx front
-  hosts: front
+  hosts: webfront
   become: yes
   roles:
     - role: nginxinc.nginx

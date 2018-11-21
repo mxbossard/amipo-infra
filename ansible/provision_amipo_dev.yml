@@ -2,9 +2,21 @@
 
 - name: Provision AMIPO dev machines
   hosts: development
+  become: yes
+
   tasks:
     - debug: msg="Provision AMIPO dev VMs"
-   
+
+    - name: Wait for machine network to be up
+      wait_for:
+        host: 0.0.0.0
+        port: 22
+        timeout: 60
  
+    - name: Install some packages
+      package:
+        name: ["vim"]
+        state: present
+
 - import_playbook: nginx_front_install.yml
 

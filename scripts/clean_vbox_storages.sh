@@ -2,7 +2,7 @@
 
 storagesList="$@"
 
-echo $storagesList
+echo "Cleaning vbox storages ..."
 
 for file in $storagesList
 do

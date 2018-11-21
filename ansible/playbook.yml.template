@@ -1,6 +1,6 @@
 ---
 
-# This playbook is a template wich help to start a new template. 
+# This playbook is a template wich help to start a new playbook. 
 
 - name: Setup nginx
   hosts: nginx

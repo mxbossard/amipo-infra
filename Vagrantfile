@@ -13,13 +13,13 @@ amipo1_ip = "192.168.56.111"
 proxy_http_url = "http://#{host_ip}:3128/"
 proxy_https_url = proxy_http_url
 
-# Execute vbox storage cleaning script
-system("
-    if [ #{ARGV[0]} = 'up' ] && [ #{ARGV[1]} = 'amipo1' ]; then
-        echo 'Execute vbox storages cleaning script ...'
-        #{vagrant_root}/scripts/clean_vbox_storages.sh '#{amipo1_extra_disk_filepath}'
-    fi
-")
+## Execute vbox storage cleaning script
+#system("
+#    if [ \( #{ARGV[0]} = 'up' \) -a \( #{ARGV[1]} = '' -o #{ARGV[1]} = 'amipo1' \) ]; then
+#        echo 'Execute vbox storages cleaning script ...'
+#        #{vagrant_root}/scripts/clean_vbox_storages.sh '#{amipo1_extra_disk_filepath}'
+#    fi
+#")
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Use the same key for each machine
@@ -39,6 +39,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.landrush.enabled = true
     config.landrush.tld = "dev"
     config.landrush.guest_redirect_dns = true
+    config.landrush.host_redirect_dns = false #Disable this because it don't works on all linux
   end
 
   # Configure hostupdater plugin to not remove hosts on destruction from hosts file
@@ -48,12 +49,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   #config.vm.synced_folder ".", "/vagrant", type: "rsync"
 
-#  # Config proxy if a proxy is used
-#  if Vagrant.has_plugin?("vagrant-proxyconf")
-#    config.proxy.http     = proxy_http_url
-#    config.proxy.https    = proxy_https_url
-#    config.proxy.no_proxy = "localhost,127.0.0.1,.dev,.lxc"
-#  end
+  # Config proxy if a proxy is used
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    config.proxy.http     = proxy_http_url
+    config.proxy.https    = proxy_https_url
+    config.proxy.no_proxy = "localhost,127.0.0.1,.dev,.lxc"
+  end
 
   config.vm.provider "virtualbox" do |vb|
     # Use the NAT host DNS resolver to speed up internet connections
@@ -87,6 +88,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     machine.vm.synced_folder "#{vagrant_home}", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{vagrant_home}/insecure_private_key"]
 
     machine.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--name", "controller"]
       vb.customize ["modifyvm", :id, "--memory", 256]
     end
 
@@ -106,9 +108,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # VM Amipo1
   config.vm.define "amipo1" do |machine|
     machine.vm.hostname = "amipo1.dev"
-    
+   
+    machine.trigger.before :up do |trigger|
+      trigger.run = {inline: "#{vagrant_root}/scripts/clean_vbox_storages.sh '#{amipo1_extra_disk_filepath}'"}
+    end
+ 
     # Define a private IP
     machine.vm.network :private_network, ip: "#{amipo1_ip}"
+    
+    # Define alaises
+    config.hostsupdater.aliases = ["amipo.dev", "www.amipo.dev", "test.amipo.dev"]
+    config.landrush.host "amipo.dev", "#{amipo1_ip}"
+    config.landrush.host "www.amipo.dev", "#{amipo1_ip}"
+    config.landrush.host "test.amipo.dev", "#{amipo1_ip}"
+    config.landrush.host "amipo1.dev", "#{amipo1_ip}"
 
     machine.vm.provider :virtualbox do |vb|
       # Change vm ID, needed for storage
@@ -133,8 +146,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #machine.vm.provision "shell", path: "increase_swap.sh"
 
     # Bootstrap ansible in box
-    machine.vm.provision "shell", path: "#{vagrant_root}/scripts/bootstrap_ansible.sh"
-    #machine.vm.provision "shell", inline: "sudo apt install -y python2.7; test -f /usr/bin/python || ln -s /usr/bin/python2.7 /usr/bin/python"
+    machine.vm.provision "shell", path: "#{vagrant_root}/scripts/bootstrap_ansible_with_apt.sh"
 
     # Provision the VM with the ansible installed on controller
     machine.vm.provision "ansible" do |ansible|

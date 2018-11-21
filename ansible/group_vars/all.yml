@@ -1,23 +1,22 @@
 ---
 
-ansibleHome: /home/vagrant/ansible
-inventoryHome: "{{ ansibleHome }}/{{ envName }}_inventory"
+# Vagrant config
+controllerIp: 192.168.56.101
+
+# Controller config
+controllerUser: vagrant
+controllerHome: /home/{{ controllerUser }}
+ansibleHome: "{{ controllerHome }}/ansible"
+#devInventory: "{{ ansibleHome }}/development_inventory"
 playbooksHome: "{{ ansibleHome }}"
 configHome: "{{ ansibleHome }}/config"
 
-# Default container config
-distribName: alpine
-distribRelease: 3.7
-ctPortsMapping: {}
-ctVolumeRules: {}
+#ansibleHome: /home/vagrant/ansible
+#inventoryHome: "{{ ansibleHome }}/{{ envName }}_inventory"
+#playbooksHome: "{{ ansibleHome }}"
+#configHome: "{{ ansibleHome }}/config"
 
-# Auto lxc build config
-containerListFile: "{{ ansibleHome + '/lxc_container_list.yml' }}"
-lxcMainHost: amipo1.dev
-
-# lxc config
-lxcUser: lxc
-lxcHome: /home/{{ lxcUser }}
-lxcSubnet: 10.0.3.0/24
-lxcGateway: 10.0.3.1
+# Read proxy config from a script
+proxyConfigScriptPath: /etc/profile.d/proxy.sh
+proxyConfig: "{{ (lookup('file', proxyConfigScriptPath) | regex_replace('\\n', '; ') + ';') | regex_replace(';+\\s*;*', ';') | regex_replace('^;$', '') }}"
 

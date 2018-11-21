@@ -1,0 +1,75 @@
+---
+
+# Configure the nginx front web architecture.
+# Maintain 1 file in conf.d for each server block.
+
+- name: Configure nginx front web architecture
+  hosts: webfront
+  become: yes
+
+  vars:
+    nginx_conf_dir: "/etc/nginx/conf.d"
+    server_block_template: "nginx/webFrontArchserverBlock.j2"
+    webfront_arch_sites:
+      www.amipo.fr.conf:
+        443:
+          listen: "443 ssl"
+          server_name: "{{ [websiteDomainName] + websiteDomainNameAliases }}"
+          root: "/var/www/www.amipo.fr"       
+          index: "index.html index.htm"
+ 
+      default.conf:
+        80:
+          listen: "80"
+          server_name: "_"
+          root: "/var/www/default"       
+          locations:
+            "/":
+              try_files: "$uri $uri/ @redirect_https"
+            "@redirect_https":
+              return: "302 https://$host$request_uri"
+        443:
+          listen: "443 ssl"
+          server_name: "_"
+          root: "/var/www/default"       
+          locations:
+            "/":
+              try_files: "$uri $uri/ =404"
+
+
+  tasks:
+    - name: Build server block files
+      template:
+        src: "{{ server_block_template }}"
+        #dest: "{{ nginx_conf_dir }}/{{ item.key }}.conf"
+        dest: "{{ nginx_conf_dir }}/{{ item.key }}"
+        owner: "{{ webServerSystemUser }}"
+        mode: "0644"
+        lstrip_blocks: yes
+      with_dict: "{{ webfront_arch_sites }}"
+      notify: Reload nginx
+
+    - name: List all .conf files to check against managed files
+      #shell: for f in {{ nginx_conf_dir }}/*.conf; do basename $f .conf; done
+      shell: for f in {{ nginx_conf_dir }}/*.conf; do basename $f; done
+      register: contents
+      changed_when: False
+
+    - debug: msg={{ contents }}
+
+    - name: Remove .conf files which are not managed by this playbook for security reasons
+      file:
+        #path: "{{ nginx_conf_dir }}/{{ item }}.conf"
+        path: "{{ nginx_conf_dir }}/{{ item }}"
+        state: absent
+      with_items: "{{ contents.stdout_lines }}"
+      when: webfront_arch_sites[item] is not defined
+      notify: Reload nginx
+
+  handlers:
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2
