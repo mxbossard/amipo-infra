@@ -146,4 +146,10 @@
     nginx_stream_template_enable: false
     nginx_stream_template_listen: 12345
 
+  tasks:
+    - name: "Install some packages"
+      package:
+        name: ["openssl"]
+        state: present
+
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

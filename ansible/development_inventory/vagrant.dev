@@ -13,3 +13,7 @@ amipo1.dev
 [controller]
 controller.dev
 
+[ssl_dev:children]
+controller
+webfront
+

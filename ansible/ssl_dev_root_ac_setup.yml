@@ -1,0 +1,42 @@
+---
+
+# This playbook generate a Dev root AC private key and X509 certificate for dev use.
+# If the private key or the certificate already exists it will not override it. 
+
+- name: Genereate dev SSL Root Certificate 
+  hosts: controller
+  become: yes
+  become_user: "{{ controllerUser }}"
+
+  vars:
+#    root_AC_dir: "{{ vagrantHostDir }}/.dev_root_AC"
+#    root_AC_privkey_filepath: "{{ root_AC_dir }}/personnal_root_ac_privkey.pem"
+#    root_AC_privkey_cipher: "genrsa"
+#    root_AC_privkey_numbits: 4096
+#    root_AC_cert_filepath: "{{ root_AC_dir }}/personnal_root_ac_cert.pem"
+
+  tasks:
+    - name: Create root AC directory
+      file:
+        path: "{{ root_AC_dir }}"
+        state: directory
+
+    - name: Generate a private key
+      shell: "openssl {{ root_AC_privkey_cipher }} -out {{ root_AC_privkey_filepath }} {{ root_AC_privkey_numbits }}"
+      args:
+        creates: "{{ root_AC_privkey_filepath }}"
+
+    - name: Restrict privileges of private key
+      file:
+        path: "{{ root_AC_privkey_filepath }}"
+        state: "file"
+        owner: "{{ controllerUser }}"
+        mode: "0400"
+
+    - name: Generate a certificate
+      shell: "openssl req -new -key {{ root_AC_privkey_filepath }} -out {{ root_AC_cert_filepath }} -x509 -days 3650 -subj '/C=FR/ST=France/L=Orleans/O=Global Security/OU=IT Department/CN=amipo.fr'"
+      args:
+        creates: "{{ root_AC_cert_filepath }}"
+
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

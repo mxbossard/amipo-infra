@@ -1,0 +1,30 @@
+---
+
+# Dev root AC generation config
+root_AC_dir: "{{ vagrantHostDir }}/.dev_root_AC"
+root_AC_privkey_filepath: "{{ root_AC_dir }}/personnal_root_ac_privkey.pem"
+root_AC_privkey_cipher: "genrsa"
+root_AC_privkey_numbits: 4096
+root_AC_cert_filepath: "{{ root_AC_dir }}/personnal_root_ac_cert.pem"
+
+# Dev webfront ssl config
+dev_ssl_privkey_cipher: "genrsa"
+dev_ssl_privkey_numbits: 4096
+
+# Map of dev ssl certs
+ssl_certs_map:
+  www.amipo:
+    common_name: www.amipo.dev
+    alt_names: ["amipo.dev", "www.amipo.dev", "test.amipo.dev"]
+
+
+ssl_subject_radical: "/C=FR/ST=France/L=Orleans/O=Global Security/OU=IT Department/CN="
+
+ssl_cert_parent_dir: "/etc/openssl/dev"
+
+ssl_privkey_filename: "privkey.pem"
+ssl_csr_filename: "csr.pem"
+ssl_cert_filename: "cert.pem"
+ssl_chain_filename: "chain.pem"
+ssl_fullchain_filename: "fullchain.pem"
+
