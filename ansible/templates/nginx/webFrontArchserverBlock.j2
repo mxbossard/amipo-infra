@@ -24,8 +24,8 @@ server {
 
     # OCSP Stapling ---
     # fetch OCSP records from URL in ssl_certificate and cache them
-    #ssl_stapling on;
-    #ssl_stapling_verify on;
+    ssl_stapling on;
+    ssl_stapling_verify on;
 
     ## verify chain of trust of OCSP response using Root CA and Intermediate certs
     ssl_trusted_certificate {{ ssl_cert_dir }}/{{ ssl_chain_filename }};
@@ -37,13 +37,18 @@ server {
 
   {% if server.locations is defined %}
   {% for path, location in server.locations.iteritems() %}
-    location "{{ path }}" {
+    location {{ path }} {
+      {#
       {% if location.try_files is defined %}
         try_files {{ location.try_files }};
       {% endif %}
       {% if location.return is defined %}
         return {{ location.return }}; 
       {% endif %}
+      #}
+      {% for ruleName, ruleValue in location.iteritems() %}
+        {{ ruleName }} {{ ruleValue }};
+      {% endfor %}
     }
 
   {% endfor %}

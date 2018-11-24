@@ -34,7 +34,7 @@
         mode: "0400"
 
     - name: Generate a certificate
-      shell: "openssl req -new -key {{ root_AC_privkey_filepath }} -out {{ root_AC_cert_filepath }} -x509 -days 3650 -subj '/C=FR/ST=France/L=Orleans/O=Global Security/OU=IT Department/CN=amipo.fr'"
+      shell: "openssl req -new -key {{ root_AC_privkey_filepath }} -out {{ root_AC_cert_filepath }} -x509 -days 3650 -subj '{{ ssl_subject_radical }}personal_dev_amipo_ca'"
       args:
         creates: "{{ root_AC_cert_filepath }}"
 

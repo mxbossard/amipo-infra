@@ -3,31 +3,41 @@
 nginx_conf_dir: "/etc/nginx/conf.d"
 webServerSystemUser: "nginx"
 
+default_root_dir: "/var/www/default"
+homepage_deploy_dir: "/var/www/www.amipo"
+
 webfront_architecture_map:
   www.amipo.conf:
     443:
       listen: "443 ssl http2"
       cert_name: "www.amipo"
       server_name: "{{ [websiteDomainName] + websiteDomainNameAliases }}"
-      root: "/var/www/www.amipo"
-      index: "index.html index.htm"
+      root: "{{ homepage_deploy_dir }}"
+      locations:
+        "/":
+          try_files: "$uri $uri/index.html =404"
+        "~ ^(/img/|/js/|/css/)":
+          expires: "365d" 
 
   default.conf:
     80:
-      listen: "80"
+      listen: "80 default_server"
       server_name: "_"
-      root: "/var/www/default"
+      root: "{{ default_root_dir }}"
       locations:
         "/":
-          try_files: "$uri $uri/ @redirect_https"
+          try_files: "$uri $uri/index.html @redirect_https"
         "@redirect_https":
           return: "302 https://$host$request_uri"
+
     443:
       listen: "443 ssl"
       cert_name: "www.amipo"
       server_name: "_"
-      root: "/var/www/default"
+      root: "{{ default_root_dir }}"
       locations:
         "/":
-          try_files: "$uri $uri/ =404"
+          try_files: "$uri $uri/index.html @redirect_www"
+        "@redirect_www":
+          return: "302 https://{{ websiteDomainName }}/"
 

@@ -8,6 +8,6 @@ provisioningPubKey: "{{ lookup('file', provisioningKeyFilepath + '.pub') }}"
 
 # Domain name config
 websiteDomainName: "www.amipo.dev"
-websiteDomainNameAliases: ["amipo.dev"]
+websiteDomainNameAliases: [] #["amipo.dev"]
 
 

@@ -18,7 +18,7 @@ ssl_certs_map:
     alt_names: ["amipo.dev", "www.amipo.dev", "test.amipo.dev"]
 
 
-ssl_subject_radical: "/C=FR/ST=France/L=Orleans/O=Global Security/OU=IT Department/CN="
+ssl_subject_radical: "/C=FR/ST=France/L=Orleans/O=AMIPO/OU=IT Department/CN="
 
 ssl_cert_parent_dir: "/etc/openssl/dev"
 

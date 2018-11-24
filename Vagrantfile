@@ -113,6 +113,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       trigger.run = {inline: "#{vagrant_root}/scripts/clean_vbox_storages.sh '#{amipo1_extra_disk_filepath}'"}
     end
  
+#    # Ensure machine network is up
+#    machine.trigger.before :provision do |trigger|
+#      trigger.run = {inline: "#{vagrant_root}/scripts/waitNetworkUp.sh 'amipo1.dev'"}
+#    end
+ 
     # Define a private IP
     machine.vm.network :private_network, ip: "#{amipo1_ip}"
     

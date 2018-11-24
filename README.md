@@ -57,7 +57,7 @@ If vagrant hang during downloading or provisioning, check your network connectiv
 
 Check if you have sufficient space in your home directory (or where the box should be deployed). Usually, a couple of GB are required.
 
-### SSH too many authentication failures
+### SSH too many authentication failures or timeout to connect
 If ansible cannot do it's job because of such an error, it may be because of the ssh-agent in a bad state. Try to restart your ssh-agent. To troubleshoot further, you may try to connect to the VM yourself from the host with the following command: `ssh -vv -i ~/.vagrant.d/insecure_private_key vagrant@MACHINE_NAME`
 
 ### Errors on vagrant up
@@ -72,7 +72,7 @@ In some cases, you may need to restart the virtualbox daemon or reboot your comp
 If vagrant hangs during VM boot, you may use the virtualbox gui to check if the VM is started or not. You also can try to ssh to the VM to check for authentication problems.
 
 ### Unable to resolve vagrant box names
-You should be able to ping amipo1.dev and controller.dev from your host computer. If not dnsmasq is probably badly configured. You could try a `sudo service dnsmasq restart`.
+You should be able to ping amipo1.dev and controller.dev from your host computer. A plugin is responsible for adding this names in your /etc/hosts file. That's why vagrant need you admin password on vagrant up.
 
 ## User Guide
 This infra code is responsible to setup the infrastructure.

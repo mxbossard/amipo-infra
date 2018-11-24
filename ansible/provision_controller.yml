@@ -18,7 +18,7 @@
 
     - name: Install some packages
       package:
-        name: ["dnsmasq", "vim"]
+        name: ["dnsmasq", "vim", "rsync"]
         state: present
 
     - name: Add cd ansible to .profile file

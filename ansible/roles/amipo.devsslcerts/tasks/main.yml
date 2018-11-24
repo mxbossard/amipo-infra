@@ -17,17 +17,18 @@
   shell: "openssl {{ dev_ssl_privkey_cipher }} -out {{ dev_ssl_privkey_filepath }} {{ dev_ssl_privkey_numbits }}"
   args:
     creates: "{{ dev_ssl_privkey_filepath }}"
+  notify: Reload nginx
 
 - name: Generate a CSR
-  #shell: "cp /etc/ssl/openssl.cnf /etc/openssl/amipo_dev_openssl.cnf; echo '\n[SAN]\nsubjectAltName={{ dev_ssl_altnames }}\n' >> /etc/openssl/amipo_dev_openssl.cnf; openssl req -key {{ root_AC_privkey_filepath }} -new -sha256 -out {{ dev_ssl_csr_filepath }} -subj '{{ dev_ssl_subject }}' -reqexts SAN -extensions SAN -config /etc/openssl/amipo_dev_openssl.cnf"
-  shell: "openssl req -key {{ dev_ssl_privkey_filepath }} -new -sha256 -out {{ dev_ssl_csr_filepath }} -subj '{{ dev_ssl_subject }}'"
+  shell: "cp /etc/ssl/openssl.cnf /etc/openssl/amipo_dev_openssl.cnf; echo '\n[SAN]\nsubjectAltName={{ dev_ssl_altnames }}\n' >> /etc/openssl/amipo_dev_openssl.cnf; openssl req -key {{ dev_ssl_privkey_filepath }} -new -sha256 -out {{ dev_ssl_csr_filepath }} -subj '{{ dev_ssl_subject }}' -reqexts SAN -extensions SAN -config /etc/openssl/amipo_dev_openssl.cnf"
+  #shell: "openssl req -key {{ dev_ssl_privkey_filepath }} -new -sha256 -out {{ dev_ssl_csr_filepath }} -subj '{{ dev_ssl_subject }}'"
   args:
     creates: "{{ dev_ssl_csr_filepath }}"
   register: csr_result
 
 - name: Create openssl work dir
   file:
-    path: "/etc/openssl/demoCA/newcerts"
+    path: "/etc/openssl/work/demoCA/newcerts"
     state: directory
     mode: "0400"
   when: csr_result is changed
@@ -35,21 +36,29 @@
 - name: Init openssl serial
   copy:
     content: "01"
-    dest: "/etc/openssl/demoCA/serial"
+    dest: "/etc/openssl/work/demoCA/serial"
     mode: "0400"
   when: csr_result is changed
 
 - name: Init openssl index.txt
   copy:
     content: ""
-    dest: "/etc/openssl/demoCA/index.txt"
+    dest: "/etc/openssl/work/demoCA/index.txt"
     mode: "0400"
   when: csr_result is changed
 
+- name: Configure CA to copy extensions
+  lineinfile:
+    path: "/etc/ssl/openssl.cnf"
+    insertafter: '^\[ CA_default \]'
+    regexp: '^#?\s*copy_extensions\s*='
+    line: "copy_extensions = copy"
+
 - name: Sign the CSR
-  shell: "cd /etc/openssl; openssl ca -days 375 -notext -md sha256 -in {{ dev_ssl_csr_filepath }} -out {{ dev_ssl_cert_filepath }} -keyfile {{ root_AC_privkey_filepath }} -cert {{ root_AC_cert_filepath }} -batch"
+  shell: "cd /etc/openssl/work; openssl ca -days 375 -notext -md sha256 -in {{ dev_ssl_csr_filepath }} -out {{ dev_ssl_cert_filepath }} -keyfile {{ root_AC_privkey_filepath }} -cert {{ root_AC_cert_filepath }} -batch"
   args:
     creates: "{{ dev_ssl_cert_filepath }}"
+  notify: Reload nginx
 
 - name: Copy chain.pem file
   copy:
@@ -60,6 +69,7 @@
   shell: "cat {{ dev_ssl_cert_filepath }} {{ dev_ssl_chain_filepath }} > {{ dev_ssl_fullchain_filepath }}"
   args:
     creates: "{{ dev_ssl_fullchain_filepath }}"
+  notify: Reload nginx
 
 - name: Restrict privileges of private key
   file:

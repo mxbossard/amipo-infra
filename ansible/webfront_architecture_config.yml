@@ -9,14 +9,37 @@
 
   vars:
     server_block_template: "nginx/webFrontArchserverBlock.j2"
+    dev_index_template: "webfront/dev_index.html.j2"
+    dev_root_ac_pub_filename: "amipo_personal_dev_root_ac.pem"
 
   tasks:
+    - name: Ensure default site root direcctory exists
+      file: 
+        path: "{{ default_root_dir }}"
+        state: directory
+        owner: "{{ webServerSystemUser }}"
+        mode: "0555"
+
+    - name: Copy dev index.html
+      template:
+        src: "{{ dev_index_template }}"
+        dest: "{{ default_root_dir }}/index.html"
+        owner: "{{ webServerSystemUser }}"
+        mode: "0444"
+
+    - name: Copy dev root AC in dev www
+      copy:
+        src: "{{ root_AC_cert_filepath }}"
+        dest: "{{ default_root_dir }}/{{ dev_root_ac_pub_filename }}"
+        owner: "{{ webServerSystemUser }}"
+        mode: "0444"
+
     - name: Build server block files
       template:
         src: "{{ server_block_template }}"
         dest: "{{ nginx_conf_dir }}/{{ item.key }}"
         owner: "{{ webServerSystemUser }}"
-        mode: "0644"
+        mode: "0444"
         lstrip_blocks: yes
       with_dict: "{{ webfront_architecture_map }}"
       notify: Reload nginx

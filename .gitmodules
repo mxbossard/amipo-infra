@@ -2,7 +2,3 @@
 	path = submodules/homepage-static
 	url = git@framagit.org:amipo/homepage-static.git
 	branch = master
-[submodule "submodules/front-nginx-config"]
-	path = submodules/front-nginx-config
-	url = git@framagit.org:amipo/front-nginx-config.git
-	branch = master

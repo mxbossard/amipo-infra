@@ -1,0 +1,61 @@
+---
+
+# This playbook deploy the homepage dev workspace on dev environment. 
+
+- name: Deploy Amipo homepage dev workspace
+  hosts: webfront
+  become: yes
+
+  vars:
+    homepage_submodule_dir: "homepage-static"
+    homepage_dev_branch: "master"
+
+  tasks:
+    - name: Check homepage git submodule is present
+      stat:
+        path: "/vagrant/submodules/{{ homepage_submodule_dir }}/README.MD"
+      #delegate_to: "{{ controllerIp }}"
+      delegate_to: 127.0.0.1
+      register: stat_result
+
+    - name: Checkout homepage git submodule
+      local_action:
+        module: "shell cd /vagrant/submodules; git submodule update --init --remote --recursive {{ homepage_submodule_dir }}; cd {{ homepage_submodule_dir }}; git checkout {{ homepage_dev_branch }}"
+      become_user: "{{ controllerUser }}"
+      when: not stat_result.stat.exists
+      register: git_result
+      failed_when: git_result is failed
+
+    - debug: var=git_result
+
+    - name: Ensure homepage deploy dir exists
+      file:
+        path: "{{ homepage_deploy_dir}}"
+        state: directory
+        owner: "{{ webServerSystemUser }}"
+        mode: 0555
+
+    - name: Copy Amipo homepage
+      synchronize:
+        src: /vagrant/submodules/{{ homepage_submodule_dir }}/
+        dest: "{{ homepage_deploy_dir }}"
+        use_ssh_args: yes
+
+    - name: Grant file owning permissions
+      file:
+        path: "{{ homepage_deploy_dir}}"
+        state: directory
+        recurse: yes
+        owner: "{{ webServerSystemUser }}"
+        mode: 0744
+
+    - name: Grant execution to amipo homepage compilation script
+      file: 
+        path: "{{ homepage_deploy_dir }}/renameStaticContentWithHash.sh"
+        mode: 0744
+
+    - name: Compile Amipo homepage
+      shell: "/bin/sh -c 'cd {{ homepage_deploy_dir }}; ./renameStaticContentWithHash.sh'"
+
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

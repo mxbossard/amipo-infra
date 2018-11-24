@@ -17,5 +17,13 @@
         common_name: "{{ item.value.common_name }}"
         alt_names: "{{ item.value.alt_names }}"
       with_dict: "{{ ssl_certs_map }}"
+      notify: Reload nginx
+
+  handlers:
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+
 
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2
