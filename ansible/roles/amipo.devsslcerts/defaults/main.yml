@@ -1,5 +1,7 @@
 ---
 
+force_cert_renew: no
+
 dev_ssl_cert_dir: "{{ ssl_cert_parent_dir }}/{{ common_name }}"
 
 dev_ssl_privkey_filepath: "{{ dev_ssl_cert_dir }}/{{ ssl_privkey_filename }}"
@@ -9,4 +11,4 @@ dev_ssl_chain_filepath: "{{ dev_ssl_cert_dir }}/{{ ssl_chain_filename }}"
 dev_ssl_fullchain_filepath: "{{ dev_ssl_cert_dir }}/{{ ssl_fullchain_filename }}"
 
 dev_ssl_subject: "{{ ssl_subject_radical }}{{ common_name }}"
-dev_ssl_altnames: "{{ alt_names | map('regex_replace', '^(.*)$', 'DNS:\\1') | list | join(',') }}"
+dev_ssl_altnames: "DNS:{{ common_name }},{{ alt_names | map('regex_replace', '^(.*)$', 'DNS:\\1') | list | join(',') }}"

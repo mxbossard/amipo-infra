@@ -6,6 +6,12 @@
 # * common_name
 # * alt_names
 
+- name: "Force cert renew by removing cert directory"
+  file:
+    path: "{{ dev_ssl_cert_dir }}"
+    state: "absent"
+  when: force_cert_renew
+
 - name: Create directory
   file:
     path: "{{ dev_ssl_cert_dir }}"
@@ -35,7 +41,7 @@
 
 - name: Init openssl serial
   copy:
-    content: "01"
+    content: "0{{ 999999999 | random }}"
     dest: "/etc/openssl/work/demoCA/serial"
     mode: "0400"
   when: csr_result is changed
