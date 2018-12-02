@@ -137,7 +137,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     machine.vm.provision "shell", inline: "sudo apt-get --assume-yes install lvm2"
 
     # Add an extra LVM storage to persist beyond the VM destruction.
-    machine.persistent_storage.enabled = true
+    machine.persistent_storage.enabled = false
     machine.persistent_storage.partition = true
     machine.persistent_storage.location = amipo1_extra_disk_filepath
     machine.persistent_storage.size = 5000
