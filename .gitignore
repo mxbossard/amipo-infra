@@ -2,15 +2,16 @@
 .amipoLocal
 .dev_root_AC
 
+# SSH Credentials personal files
+.privateCredentials
+
 *.swp
 *.swo
 *.vdi
 *.retry
 *.log
 *.retry
-#git
 
 # Specific MBD files
-ansible/amipo_infra.inventory
 squid_notes.md
 
