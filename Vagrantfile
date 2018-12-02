@@ -25,13 +25,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Use the same key for each machine
   config.ssh.insert_key = false
 
-  # Enable ssh agent forwarding
-  config.ssh.forward_agent = true
+  # Disable ssh agent forwarding
+  config.ssh.forward_agent = false
 
+  #config.vm.box = "hashicorp/precise64"
   #config.vm.box = "ubuntu/xenial64"
   #config.vm.box = "debian/contrib-stretch64"
   config.vm.box = "bento/debian-9.5"
-  #config.vm.box = "hashicorp/precise64"
 
 
   # Enable vagrant plugin landrush to help vagrant boxes dns to resolve box names
@@ -47,13 +47,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.hostsupdater.remove_on_suspend = false
   end
 
-  #config.vm.synced_folder ".", "/vagrant", type: "rsync"
-
   # Config proxy if a proxy is used
   if Vagrant.has_plugin?("vagrant-proxyconf")
     config.proxy.http     = proxy_http_url
     config.proxy.https    = proxy_https_url
     config.proxy.no_proxy = "localhost,127.0.0.1,.dev,.lxc"
+  end
+
+  # Config vbguest plugin if it is used
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    # Disable vbguest installation because I think it is not needed
+    config.vbguest.no_install = true
   end
 
   config.vm.provider "virtualbox" do |vb|
@@ -81,7 +85,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       machine.hostsupdater.aliases = ["controller.dev"]
     end
 
-    # Mount vagrant dir to vagrant home
+    # Mount ansible dir into vagrant home
     machine.vm.synced_folder "#{vagrant_root}/ansible", "/home/vagrant/ansible"
 
     # Copy insecure_private_key in controller to allow provide large ssh access from controller on all Vagrant boxes. Usefull for debugging.
@@ -99,7 +103,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       ansible.compatibility_mode = "2.0"
       ansible.provisioning_path = "/home/vagrant/ansible"
       ansible.config_file = "ansible.cfg"
-      ansible.inventory_path = "development_inventory"
+      ansible.inventory_path = "environments/dev"
       ansible.playbook = "/home/vagrant/ansible/provision_controller.yml"
       ansible.limit = "all"
     end
@@ -112,12 +116,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     machine.trigger.before :up do |trigger|
       trigger.run = {inline: "#{vagrant_root}/scripts/clean_vbox_storages.sh '#{amipo1_extra_disk_filepath}'"}
     end
- 
-#    # Ensure machine network is up
-#    machine.trigger.before :provision do |trigger|
-#      trigger.run = {inline: "#{vagrant_root}/scripts/waitNetworkUp.sh 'amipo1.dev'"}
-#    end
- 
+
     # Define a private IP
     machine.vm.network :private_network, ip: "#{amipo1_ip}"
     
@@ -137,6 +136,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     machine.vm.provision "shell", inline: "sudo apt-get --assume-yes install lvm2"
 
     # Add an extra LVM storage to persist beyond the VM destruction.
+    # Disabled because reboot of the box is stuck
     machine.persistent_storage.enabled = false
     machine.persistent_storage.partition = true
     machine.persistent_storage.location = amipo1_extra_disk_filepath
@@ -156,7 +156,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Provision the VM with the ansible installed on controller
     machine.vm.provision "ansible" do |ansible|
       ansible.playbook_command = "#{vagrant_root}/scripts/ansible-playbook"
-      ansible.playbook = "#{vagrant_root}/ansible/provision_amipo_dev.yml"
+      ansible.playbook = "#{vagrant_root}/ansible/provision_dev_amipo.yml"
       ansible.verbose = true
       ansible.limit = "all"
     end

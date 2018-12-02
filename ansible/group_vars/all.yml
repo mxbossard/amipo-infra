@@ -11,6 +11,9 @@ ansibleHome: "{{ controllerHome }}/ansible"
 #devInventory: "{{ ansibleHome }}/development_inventory"
 playbooksHome: "{{ ansibleHome }}"
 configHome: "{{ ansibleHome }}/config"
+privateCredentialsHome: "{{ vagrantHostDir }}/.privateCredentials"
+
+sshPrivateCredentialsFilepath: "{{ privateCredentialsHome }}/ssh_credentials.yml"
 
 #ansibleHome: /home/vagrant/ansible
 #inventoryHome: "{{ ansibleHome }}/{{ envName }}_inventory"
@@ -20,4 +23,13 @@ configHome: "{{ ansibleHome }}/config"
 # Read proxy config from a script
 proxyConfigScriptPath: /etc/profile.d/proxy.sh
 proxyConfig: "{{ (lookup('file', proxyConfigScriptPath) | regex_replace('\\n', '; ') + ';') | regex_replace(';+\\s*;*', ';') | regex_replace('^;$', '') }}"
+
+admin_email: "admin@amipo.fr"
+
+# SSL filename standard
+ssl_privkey_filename: "privkey.pem"
+ssl_csr_filename: "csr.pem"
+ssl_cert_filename: "cert.pem"
+ssl_chain_filename: "chain.pem"
+ssl_fullchain_filename: "fullchain.pem"
 

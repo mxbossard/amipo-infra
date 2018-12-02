@@ -1,7 +1,7 @@
 ---
 
-- name: Provision AMIPO dev machines
-  hosts: development
+- name: Provision AMIPO machines
+  hosts: host
   become: yes
 
   tasks:
@@ -18,13 +18,14 @@
         name: ["vim", "rsync", "git"]
         state: present
 
+- import_playbook: webfront_letsencrypt_setup.yml
+
 - import_playbook: webfront_nginx_install.yml
 
-- import_playbook: ssl_dev_root_ac_setup.yml
-
 - import_playbook: webfront_dev_ssl_config.yml
+  when: "'development' not in group_names"
 
 - import_playbook: webfront_architecture_config.yml
 
-- import_playbook: homepage_dev_workspace_deploy.yml
+- import_playbook: homepage_release_deploy.yml
 

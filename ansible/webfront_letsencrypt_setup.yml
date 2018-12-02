@@ -1,0 +1,154 @@
+---
+
+# This playbook install certbot from sources, generates webfront ssl certs if needed and add a cronjob to autorenew certs
+# Largely inspired by https://github.com/geerlingguy/ansible-role-certbot
+
+- name: Setup letsencrypt
+  hosts: webfront
+  become: yes
+
+  vars:
+    ssl_cert_root_dir: "/etc/letsencrypt/live"
+
+    # Certbot seems to need root privileges to run
+    certbot_user: "root"
+    certbot_group: "certbot"
+    nginx_user: "nginx"
+
+    certbot_repo: https://github.com/certbot/certbot.git
+    certbot_version: master
+    certbot_keep_updated: true
+    
+    # Where to put Certbot when installing from source.
+    certbot_dir: /opt/certbot
+
+    certbot_test_command: "certbot -h"
+    certbot_stage_options: "" #--staging"
+    # Webroot use the front web server to validate domains property
+    certbot_webroot_create_command: "certbot certonly {{ certbot_stage_options }} --noninteractive --agree-tos --webroot --webroot-path {{ default_root_dir }} --email {{ cert_item.value.email | default(admin_email) }} -d {{ cert_item.value.common_name }} -d {{ cert_item.value.alt_names | join(',') }}"
+    # Standalone use a standalone web server to validate domains property
+    certbot_standalone_create_command: "certbot certonly {{ certbot_stage_options }} --noninteractive --agree-tos --standalone --email {{ cert_item.value.email | default(admin_email) }} -d {{ cert_item.value.common_name }} -d {{ cert_item.value.alt_names | join(',') }}"
+    certbot_auto_renew_options: "--quiet --no-self-upgrade {{ certbot_stage_options }}"
+
+    webfront_http_test_content: "foo"
+    webfront_http_test_file: "{{ default_root_dir }}/http_test.txt"
+    webfront_http_test_download_path: "/tmp/{{ webfront_http_test_file | basename }}"
+
+  tasks:
+    - name: Creates certbot group
+      group:
+        name: "{{ certbot_group }}"
+        system: yes
+    
+    #- name: Creates certbot user
+    #  user:
+    #    name: "{{ certbot_user }}"
+    #    group: "{{ certbot_user }}"
+    #    system: yes
+    
+    - name: Add nginx user in certbot group
+      user:
+        name: "{{ nginx_user }}"
+        groups: "{{ certbot_group }}"
+        append: yes
+
+    - name: Clone Certbot into configured directory.
+      git:
+        repo: "{{ certbot_repo }}"
+        dest: "{{ certbot_dir }}"
+        version: "{{ certbot_version }}"
+        update: "{{ certbot_keep_updated }}"
+        force: true
+   
+    - name: Add certbot to path
+      file:
+        path: /usr/bin/certbot
+        src: "{{ certbot_dir }}/certbot-auto"
+        state: link
+ 
+    - name: Ensure certbot-auto is executable.
+      file:
+        path: "{{ certbot_dir }}/certbot-auto"
+        owner: "{{ certbot_user }}"
+        mode: 0744
+
+    - name: Test certbot executable is working
+      shell: "{{ certbot_test_command }}"
+      changed_when: no
+
+    - name: Creates a test file to validate webfront is able to validate domains property
+      copy:
+        content: "{{ webfront_http_test_content }}"
+        dest: "{{ webfront_http_test_file }}"
+
+    - name: Verify test file is available via http
+      get_url:
+        url: "http://{{ websiteDomainName }}/{{ webfront_http_test_file | basename }}"
+        dest: "{{ webfront_http_test_download_path }}"
+      register: http_test_check
+      ignore_errors: yes
+
+    - name: Remove test files.
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "{{ webfront_http_test_file }}"
+        - "{{ webfront_http_test_download_path }}"
+
+    - name: Generate new certificate with webroot if it is missing.
+      shell: "{{ certbot_webroot_create_command }}"
+      args:
+        creates: "{{ ssl_cert_root_dir }}/{{ cert_item.key }}/cert.pem"
+      with_dict: "{{ ssl_certs_map }}"
+      loop_control: 
+        loop_var: cert_item
+      when: "'development' not in group_names and not http_test_check.failed"
+      register: certbot_result
+
+    - name: Stop nginx to be able to start certbot standalone server
+      service:
+        name: nginx
+        state: stopped
+      when: "'development' not in group_names and http_test_check.failed"
+
+    - name: Generate new certificate with standalone if it is missing.
+      shell: "{{ certbot_standalone_create_command }}"
+      args:
+        creates: "{{ ssl_cert_root_dir }}/{{ cert_item.key }}/cert.pem"
+      with_dict: "{{ ssl_certs_map }}"
+      loop_control: 
+        loop_var: cert_item
+      when: "'development' not in group_names and http_test_check.failed"
+      register: certbot_result
+    
+    - debug: var=certbot_result
+
+    - name: Ensure ssl certs privileges are ok.
+      file:
+        path: "{{ ssl_cert_root_dir }}/{{ cert_item.value.common_name }}"
+        owner: "{{ certbot_user }}"
+        group: "{{ certbot_group }}"
+        mode: 0740
+        recurse: yes
+      with_dict: "{{ ssl_certs_map }}"
+      loop_control: 
+        loop_var: cert_item
+      when: "'development' not in group_names"
+
+    - name: Start nginx
+      service:
+        name: nginx
+        state: reloaded
+      when: "'development' not in group_names"
+
+    - name: Add cron job for certbot renewal.
+      cron:
+        name: Certbot automatic renewal.
+        job: "certbot renew {{ certbot_auto_renew_options }} && nginx -t && nginx -s reload"
+        minute: "30"
+        hour: "3"
+        user: "{{ certbot_user }}"
+      when: "'development' not in group_names"
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

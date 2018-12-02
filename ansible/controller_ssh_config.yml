@@ -1,0 +1,48 @@
+---
+
+- name: Config SSH on controller
+  hosts: controller
+  become: yes
+
+  vars:
+    provisioning_key_filepath: "{{ controllerHome }}/.ssh/provisioning_key"
+    ssh_config_template: "ssh_config.j2"
+    ssh_credentials_sample: "files/ssh_credentials.yml.sample"
+
+  tasks:
+
+    - name: Build provisioning ssh key pair
+      shell: "/bin/bash -c 'ssh-keygen -b 4096 -t rsa -f {{ provisioning_key_filepath }} -q -N \"\"'"
+      args:
+        creates: "{{ provisioning_key_filepath }}"
+      become_user: "{{ controllerUser }}"
+
+    - name: Ensure private credentials dir exists
+      file:
+        path: "{{ privateCredentialsHome }}"
+        owner: "{{ controllerUser }}"
+        group: "{{ controllerUser }}"
+        mode: 0755
+        state: directory
+
+    - name: Create ssh private credentials config file if it is missing
+      copy:
+        src: "{{ ssh_credentials_sample }}"
+        dest: "{{ sshPrivateCredentialsFilepath }}"
+        owner: "{{ controllerUser }}"
+        group: "{{ controllerUser }}"
+        mode: 0666
+        force: no
+
+    - name: Load ssh private credentials config
+      include_vars:
+        file: "{{ sshPrivateCredentialsFilepath }}"
+
+    - name: Copy ssh config
+      template:
+        src: ssh_config.j2
+        dest: "{{ controllerHome }}/.ssh/config"
+        owner: "{{ controllerUser }}"
+        group: "{{ controllerUser }}"
+        mode: 0600
+

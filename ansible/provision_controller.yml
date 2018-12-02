@@ -18,7 +18,7 @@
 
     - name: Install some packages
       package:
-        name: ["dnsmasq", "vim", "rsync"]
+        name: ["dnsmasq", "vim", "rsync", "tree"]
         state: present
 
     - name: Add cd ansible to .profile file
@@ -35,20 +35,6 @@
       lineinfile: 
         path: "{{ controllerHome }}/.profile" 
         line: "ANSIBLE_ROLES_PATH='{{ ansibleHome }}/roles'" 
-
-    - name: Build provisioning ssh key pair
-      shell: "/bin/bash -c 'ssh-keygen -b 4096 -t rsa -f {{ provisioningKeyFilepath }} -q -N \"\"'"
-      args:
-        creates: "{{ provisioningKeyFilepath }}"
-      become_user: "{{ controllerUser }}"
-
-    - name: Copy ssh config
-      template:
-        src: ssh_config.j2
-        dest: "{{ controllerHome }}/.ssh/config"
-        owner: "{{ controllerUser }}"
-        group: "{{ controllerUser }}"
-        mode: 0600
 
 #    - name: Add route in .profile
 #      lineinfile: 
@@ -68,4 +54,8 @@
       service:
         name: dnsmasq
         state: restarted
+
+- import_playbook: controller_ssh_config.yml
+
+- import_playbook: controller_root_ca_dev_ssl_setup.yml
 

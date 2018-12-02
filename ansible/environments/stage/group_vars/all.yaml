@@ -1,0 +1,19 @@
+---
+
+# Clear ssh user used by ansible to not override user specified in ssh config
+ansible_user: ""
+
+# Domain name config
+websiteRootName: "amipo.mby.ovh"
+websiteDomainName: "www.{{ websiteRootName }}"
+websiteDomainNameAliases: []
+
+ssl_cert_parent_dir: "/etc/letsencrypt/live"
+
+# Map of ssl certs
+ssl_certs_map:
+  www.amipo:
+    common_name: "{{ websiteDomainName }}"
+    alt_names: ["{{ websiteRootName }}", "test.{{ websiteRootName }}"]
+
+

@@ -1,0 +1,38 @@
+---
+
+# This playbook deploy the homepage release. 
+
+- name: Deploy released Amipo homepage
+  hosts: webfront
+  become: yes
+
+  vars:
+    homepage_repo_url: "https://framagit.org/amipo/homepage-static.git"
+    homepage_release_branch: "master"
+
+  tasks:
+    - name: Checkout homepage
+      git:
+        repo: "{{ homepage_repo_url }}"
+        dest: "{{ homepage_deploy_dir }}"
+        version: "{{ homepage_release_branch }}"
+        force: yes
+
+    - name: Grant file owning permissions
+      file:
+        path: "{{ homepage_deploy_dir}}"
+        state: directory
+        recurse: yes
+        owner: "{{ webServerSystemUser }}"
+        mode: 0744
+
+    - name: Grant execution to amipo homepage compilation script
+      file: 
+        path: "{{ homepage_deploy_dir }}/renameStaticContentWithHash.sh"
+        mode: 0744
+
+    - name: Compile Amipo homepage
+      shell: "/bin/sh -c 'cd {{ homepage_deploy_dir }}; ./renameStaticContentWithHash.sh'"
+
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

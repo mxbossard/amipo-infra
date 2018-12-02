@@ -4,3 +4,22 @@ Host *
 
 Host framagit.org
 	StrictHostKeyChecking no
+
+# Stagging
+{% if sshConfig.stage.amipo1 is defined %}
+Host amipo1.stage
+	HostName 	{{ sshConfig.stage.amipo1.hostname }}
+	Port 		{{ sshConfig.stage.amipo1.port | default(22) }}
+	User 		{{ sshConfig.stage.amipo1.user }}
+        IdentityFile	{{ privateCredentialsHome + '/' + sshConfig.stage.amipo1.identity }}
+{% endif %}
+
+# Production
+{% if sshConfig.prod.amipo1 is defined %}
+Host amipo1.prod
+	HostName 	{{ sshConfig.prod.amipo1.hostname }}
+	Port 		{{ sshConfig.prod.amipo1.port | default(22) }}
+	User 		{{ sshConfig.prod.amipo1.user }}
+        IdentityFile	{{ privateCredentialsHome + '/' + sshConfig.prod.amipo1.identity }}
+{% endif %}
+

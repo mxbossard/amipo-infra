@@ -8,6 +8,7 @@
   become: yes
 
   vars:
+    force_ssl_cert_renew: yes
 
   tasks:
     - name: Build dev ssl certs
@@ -16,6 +17,7 @@
       vars:
         common_name: "{{ item.value.common_name }}"
         alt_names: "{{ item.value.alt_names }}"
+        force_cert_renew: "{{ force_ssl_cert_renew }}"
       with_dict: "{{ ssl_certs_map }}"
       notify: Reload nginx
 

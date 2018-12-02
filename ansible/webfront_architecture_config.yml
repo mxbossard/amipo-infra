@@ -13,7 +13,7 @@
     dev_root_ac_pub_filename: "amipo_personal_dev_root_ac.pem"
 
   tasks:
-    - name: Ensure default site root direcctory exists
+    - name: Ensure default site root directory exists
       file: 
         path: "{{ default_root_dir }}"
         state: directory
@@ -26,6 +26,7 @@
         dest: "{{ default_root_dir }}/index.html"
         owner: "{{ webServerSystemUser }}"
         mode: "0444"
+      when: "'development' in group_names"
 
     - name: Copy dev root AC in dev www
       copy:
@@ -33,6 +34,7 @@
         dest: "{{ default_root_dir }}/{{ dev_root_ac_pub_filename }}"
         owner: "{{ webServerSystemUser }}"
         mode: "0444"
+      when: "'development' in group_names"
 
     - name: Build server block files
       template:
@@ -49,7 +51,7 @@
       register: contents
       changed_when: False
 
-    - debug: msg={{ contents }}
+    #- debug: msg={{ contents }}
 
     - name: Remove .conf files which are not managed by this playbook for security reasons
       file:
