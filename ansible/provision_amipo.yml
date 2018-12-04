@@ -23,7 +23,7 @@
   when: enableProvisionWebfront
 
 - import_playbook: webfront_dev_ssl_config.yml
-  when: "enableProvisionWebfront and 'development' not in group_names"
+  when: "enableProvisionWebfront and 'development' in group_names"
 
 - import_playbook: webfront_architecture_config.yml
   when: enableProvisionWebfront

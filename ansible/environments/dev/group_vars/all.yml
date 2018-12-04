@@ -4,7 +4,7 @@
 enableProvisionWebfront: yes
     
 # Domain name config
-websiteRootName: "amipo.dev"
+websiteRootName: "{{ amipoRootDomainNames.dev }}"
 websiteDomainName: "www.{{ websiteRootName }}"
 websiteDomainNameAliases: [] #["amipo.dev"]
 

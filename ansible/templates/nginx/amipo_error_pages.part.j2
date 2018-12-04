@@ -1,0 +1,14 @@
+    # Error pages
+    error_page  401 403 404 	/erreur_404.html;
+    # redirect server error pages to the static page /50x.html
+    error_page  500 502 503 504  	/50x.html;
+    
+    location = /erreur_404.html {
+    	internal;
+    	root {{ homepage_deploy_dir }};
+    }
+    
+    location = /50x.html {
+    	internal;
+    	root /usr/share/nginx/html;
+    }

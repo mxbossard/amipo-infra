@@ -7,7 +7,7 @@ enableProvisionWebfront: yes
 ansible_user: ""
 
 # Domain name config
-websiteRootName: "amipo.mby.ovh"
+websiteRootName: "{{ amipoRootDomainNames.stage }}"
 websiteDomainName: "www.{{ websiteRootName }}"
 websiteDomainNameAliases: []
 

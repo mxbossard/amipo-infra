@@ -4,7 +4,7 @@ vagrant_root = File.dirname(__FILE__)
 vagrant_home = "#{Dir.home}/.vagrant.d"
 amipo1_extra_disk_filepath = "#{vagrant_home}/amipo1_extra_disk.vdi"
 
-ssh_private_key_path = "#{vagrant_root}/.amipoLocal/vagrant_ssh_key"
+#ssh_private_key_path = "#{vagrant_root}/.amipoLocal/vagrant_ssh_key"
 
 host_ip = "192.168.56.1"
 controller_ip = "192.168.56.101"
@@ -12,14 +12,6 @@ amipo1_ip = "192.168.56.111"
 
 proxy_http_url = "http://#{host_ip}:3128/"
 proxy_https_url = proxy_http_url
-
-## Execute vbox storage cleaning script
-#system("
-#    if [ \( #{ARGV[0]} = 'up' \) -a \( #{ARGV[1]} = '' -o #{ARGV[1]} = 'amipo1' \) ]; then
-#        echo 'Execute vbox storages cleaning script ...'
-#        #{vagrant_root}/scripts/clean_vbox_storages.sh '#{amipo1_extra_disk_filepath}'
-#    fi
-#")
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Use the same key for each machine
@@ -32,7 +24,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #config.vm.box = "ubuntu/xenial64"
   #config.vm.box = "debian/contrib-stretch64"
   config.vm.box = "bento/debian-9.5"
-
 
   # Enable vagrant plugin landrush to help vagrant boxes dns to resolve box names
   if Vagrant.has_plugin?("landrush")
@@ -83,6 +74,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Define a private IP
     machine.vm.network :private_network, ip: "#{controller_ip}"
 
+    # Before up, initialize .privateCredentials dir
+    machine.trigger.before :up do |trigger|
+      trigger.run = {inline: "#{vagrant_root}/scripts/init_private_credentials.sh"}
+    end
+
     # VM aliases to add in /etc/hosts file
     if Vagrant.has_plugin?("vagrant-hostsupdater")
       machine.hostsupdater.aliases = ["controller.dev"]
@@ -90,9 +86,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Mount ansible dir into vagrant home
     machine.vm.synced_folder "#{vagrant_root}/ansible", "/home/vagrant/ansible"
-
-    # Copy insecure_private_key in controller to allow provide large ssh access from controller on all Vagrant boxes. Usefull for debugging.
-    machine.vm.synced_folder "#{vagrant_home}", "/home/vagrant/.vagrantSsh/", type: "rsync", rsync__args: [--include="#{vagrant_home}/insecure_private_key"]
 
     machine.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--name", "controller"]

@@ -1,5 +1,5 @@
-controller.dev	connection=local ansible_user=vagrant ansible_private_key_file=~/.vagrantSsh/insecure_private_key
-amipo1.dev	ansible_user=vagrant ansible_private_key_file=~/.vagrantSsh/insecure_private_key
+controller.dev	connection=local ansible_user=vagrant ansible_private_key_file=/vagrant/.privateCredentials/vagrant_insecure_private_key
+amipo1.dev	ansible_user=vagrant ansible_private_key_file=/vagrant/.privateCredentials/vagrant_insecure_private_key
 
 [development]
 amipo1.dev

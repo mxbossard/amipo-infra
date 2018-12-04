@@ -33,3 +33,8 @@ ssl_cert_filename: "cert.pem"
 ssl_chain_filename: "chain.pem"
 ssl_fullchain_filename: "fullchain.pem"
 
+# Amipo root domain names config for each environment
+amipoRootDomainNames:
+  dev: amipo.dev
+  stage: amipo.mby.ovh
+  prod: amipo.fr

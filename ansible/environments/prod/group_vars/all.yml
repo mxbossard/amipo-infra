@@ -7,7 +7,7 @@ enableProvisionWebfront: yes
 ansible_user: ""
 
 # Domain name config
-websiteRootName: "amipo.fr"
+websiteRootName: "{{ amipoRootDomainNames.prod }}"
 websiteDomainName: "www.{{ websiteRootName }}"
 websiteDomainNameAliases: []
 

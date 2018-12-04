@@ -8,7 +8,7 @@ boxName="$( hostname ).dev"
 
 echo "Trying to ssh from $boxName to controller to launch a ping from controller to $boxName ..."
 
-while ! ssh -o StrictHostKeyChecking=no -i /vagrant/.privateCredentials/insecure_private_key vagrant@controller.dev ping -c1 $boxName
+while ! ssh -o StrictHostKeyChecking=no -i /vagrant/.privateCredentials/vagrant_insecure_private_key vagrant@controller.dev ping -c1 $boxName
 do
 	sleep 1
 done

@@ -25,8 +25,7 @@ http {
 
     keepalive_timeout  {{ nginx_main_template.http_settings.keepalive_timeout }};
 
-    gzip  on;
-    server_tokens off;
+    #gzip  on;
 
 {% if nginx_main_template.http_settings.cache %}
     proxy_cache_path /tmp/cache keys_zone=one:10m;

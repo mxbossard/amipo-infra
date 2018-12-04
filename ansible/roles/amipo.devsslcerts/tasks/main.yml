@@ -36,7 +36,7 @@
   file:
     path: "/etc/openssl/work/demoCA/newcerts"
     state: directory
-    mode: "0400"
+    mode: "0755"
   when: csr_result is changed
 
 - name: Init openssl serial
@@ -52,6 +52,16 @@
     dest: "/etc/openssl/work/demoCA/index.txt"
     mode: "0400"
   when: csr_result is changed
+
+#- name: Configure openssl dirs permisions
+#  file:
+#    path: "{{ item }}"
+#    state: directory
+#    mode: "0755"
+#  with_items:
+#    - /etc/openssl
+#    - /etc/openssl/work
+#    - /etc/openssl/work/demoCA
 
 - name: Configure CA to copy extensions
   lineinfile:

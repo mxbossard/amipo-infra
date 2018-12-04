@@ -34,5 +34,17 @@
     - name: Compile Amipo homepage
       shell: "/bin/sh -c 'cd {{ homepage_deploy_dir }}; ./renameStaticContentWithHash.sh'"
 
+    - name: Wait for webserver to be up
+      wait_for:
+        host: 0.0.0.0
+        port: 443
+
+    - name: Check Homepage deployment
+      uri:
+        url: "https://{{ websiteDomainName }}"
+        return_content: yes
+        validate_certs: no
+      register: this
+      failed_when: "'AMIPO' not in this.content"
 
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

@@ -1,0 +1,5 @@
+    # Allow only GET HEAD and POST
+    if ($request_method !~ ^(GET|HEAD|POST)$ )
+    {
+           return 405;
+    }

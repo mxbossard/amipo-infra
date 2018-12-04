@@ -11,6 +11,7 @@
     server_block_template: "nginx/webFrontArchserverBlock.j2"
     dev_index_template: "webfront/dev_index.html.j2"
     dev_root_ac_pub_filename: "amipo_personal_dev_root_ac.pem"
+    global_conf_template: "nginx/global.conf.j2"
 
   tasks:
     - name: Ensure default site root directory exists
@@ -46,6 +47,16 @@
       with_dict: "{{ webfront_architecture_map }}"
       notify: Reload nginx
 
+    - name: Add nginx global.conf file
+      template:
+        src: "{{ global_conf_template }}"
+        dest: "{{ nginx_conf_dir }}/global.conf"
+        owner: "{{ webServerSystemUser }}"
+        mode: "0444"
+        lstrip_blocks: yes
+      notify: Reload nginx
+         
+
     - name: List all .conf files to check against managed files
       shell: for f in {{ nginx_conf_dir }}/*.conf; do basename $f; done
       register: contents
@@ -58,7 +69,7 @@
         path: "{{ nginx_conf_dir }}/{{ item }}"
         state: absent
       with_items: "{{ contents.stdout_lines }}"
-      when: webfront_architecture_map[item] is not defined
+      when: webfront_architecture_map[item] is not defined and not item == 'global.conf'
       notify: Reload nginx
 
   handlers:
