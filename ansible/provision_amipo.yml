@@ -9,12 +9,6 @@
   tasks:
     - debug: msg="Provision AMIPO dev VMs"
 
-    - name: Wait for machine network to be up
-      wait_for:
-        host: 0.0.0.0
-        port: 22
-        timeout: 60
- 
     - name: Install some packages
       package:
         name: ["vim", "rsync", "git"]
@@ -22,10 +16,10 @@
 
     - debug: var=enableProvisionWebfront
 
-- import_playbook: webfront_letsencrypt_setup.yml
+- import_playbook: webfront_nginx_install.yml
   when: enableProvisionWebfront
 
-- import_playbook: webfront_nginx_install.yml
+- import_playbook: webfront_letsencrypt_setup.yml
   when: enableProvisionWebfront
 
 - import_playbook: webfront_dev_ssl_config.yml

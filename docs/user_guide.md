@@ -18,7 +18,7 @@ Les secrets necessaires sont:
 * une clef privee ssh
 
 Ils doivent etre configures pour chaque environnement dans le fichier .privateCredentials/ssh_credentials.yml, et les clefs privees ssh doivent etre deposes dans le dossier .privateCredentials/ Ce dossier contient des secrets personnels et ne devra donc jamais etre commit.
-
+Une fois le fichier .privateCredentials/ssh_credentials.yml configuré, il est nécéssaire de lancer le playbook controller_ssh_config.yml
 
 ## Choix
 ### Ansible, Inventory, lxc
