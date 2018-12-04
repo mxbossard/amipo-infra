@@ -151,7 +151,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #machine.vm.provision "shell", path: "increase_swap.sh"
 
     # Bootstrap ansible in box
-    machine.vm.provision "shell", path: "#{vagrant_root}/scripts/bootstrap_ansible_with_apt.sh"
+    machine.vm.provision "shell", path: "#{vagrant_root}/scripts/bootstrap_ansible_debian.sh"
 
     # Provision the VM with the ansible installed on controller
     machine.vm.provision "ansible" do |ansible|

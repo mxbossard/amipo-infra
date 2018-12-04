@@ -80,6 +80,7 @@
       copy:
         content: "{{ webfront_http_test_content }}"
         dest: "{{ webfront_http_test_file }}"
+      ignore_errors: yes
 
     - name: Verify test file is available via http
       get_url:
@@ -111,6 +112,7 @@
         name: nginx
         state: stopped
       when: "'development' not in group_names and http_test_check.failed"
+      ignore_errors: yes
 
     - name: Generate new certificate with standalone if it is missing.
       shell: "{{ certbot_standalone_create_command }}"
