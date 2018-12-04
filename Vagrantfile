@@ -73,6 +73,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.customize ["modifyvm", :id, "--memory", 512]
   end
 
+  # Wakeup network before provision on all boxes 
+  config.vm.provision "shell", inline: "/vagrant/scripts/wait_vagrant_box_up_from_controller.sh"
+
   # VM Controller.
   config.vm.define "controller" do |machine|
     machine.vm.hostname = "controller.dev"
