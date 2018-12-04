@@ -41,19 +41,19 @@ if [ "$( whoami )" = "root" ]
 then
         echo "Executing commands with root user"
         adminExec="/bin/sh -c"
-elif sudo -v
+elif sudo -v 2> /dev/null
 then
         echo "Executing command with sudo"
         adminExec="sudo /bin/sh -c"
 else
-        echo "Escalating root privileges to execute commands"
-        su -
-        adminExec="/bin/sh -c"
+	echo "Current user is not a sudoer. Escalating root privileges to reexecute the script"
+	su - root -c "$0" $@
+	exit 0
 fi
 
 adminHome="/home/$adminUsername"
 authorizedKeysFilepath="$adminHome/.ssh/authorized_keys"
-remoteKeyFilename="$(basename $sshPubKeyFilepath)"
+#remoteKeyFilename="$(basename $sshPubKeyFilepath)"
 
 # Add admin user with disabled password login
 echo "Creating or updating admin user..."
@@ -71,8 +71,9 @@ $adminExec "chmod 0440 /etc/sudoers.d/admin"
 echo "Deploying admin ssh pub key..."
 # Remotely create admin .ssh directory
 $adminExec "test -d $adminHome/.ssh || mkdir $adminHome/.ssh"
-$adminExec "cat ~/$remoteKeyFilename >> $authorizedKeysFilepath"
-$adminExec "chown -R $adminUsername:$adminUsername $adminHome/.ssh; chmod 0600 -R $adminHome/.ssh/*"
-#$adminExec "sort -u $authorizedKeysFilepath > $authorizedKeysFilepath"
+$adminExec "cat $sshPubKeyFilepath >> $authorizedKeysFilepath"
+$adminExec "chown -R $adminUsername:$adminUsername $adminHome; chmod 0600 -R $adminHome/.ssh/*"
+# Sort authorized_keys file
+$adminExec "cp $authorizedKeysFilepath ${authorizedKeysFilepath}.tmp; sort -u ${authorizedKeysFilepath}.tmp > $authorizedKeysFilepath; rm -f -- ${authorizedKeysFilepath}.tmp"
 
-$adminExec "rm -f -- ~/$remoteKeyFilename"
+$adminExec "rm -f -- $sshPubKeyFilepath"

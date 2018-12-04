@@ -36,16 +36,23 @@ then
 	exit 1
 fi
 
-remoteExec="ssh $sshHost /bin/sh -e"
+remoteExec="ssh -tt $sshHost /bin/sh -e"
 
-bootstrap_ansible_script="bootstrap_ansible_debian.sh"
-bootstrap_admin_script="bootstrap_admin_user_debian.sh"
+boostrapAnsibleScript="bootstrap_ansible_debian.sh"
+boostrapAdminScript="bootstrap_admin_user_debian.sh"
+sshPubKeyFilename="$( basename $sshPubKeyFilepath )"
 
-scp $scriptDir/$bootstrap_ansible_script $scriptDir/$bootstrap_admin_script $sshPubKeyFilepath $sshHost:~
+scp $scriptDir/$boostrapAnsibleScript $scriptDir/$boostrapAdminScript $sshPubKeyFilepath $sshHost:/tmp
 
-# Remotely launch ansible bootstrap script
-$remoteExec -c "'~/$bootstrap_ansible_script'"
+echo "Warning ! Commands are executed on remote machine. You may be prompted for remote root password."
 
-# Remotely launch admin bootstrap script
-$remoteExec -c "'~/$bootstrap_admin_script $adminUsername ~/$( basename $sshPubKeyFilepath )'"
+# Aggregate remote command to minize ssh session count.
 
+# Remotely launch ansible bootstrap script\
+remoteCmd="/tmp/$boostrapAnsibleScript"
+# Remotely launch admin bootstrap script\
+remoteCmd="$remoteCmd; /tmp/$boostrapAdminScript $adminUsername /tmp/$sshPubKeyFilename"
+# Clean
+remoteCmd="$remoteCmd; rm -f -- /tmp/$boostrapAnsibleScript /tmp/$boostrapAdminScript /tmp/$sshPubKeyFilename"
+
+$remoteExec -c "$remoteCmd"

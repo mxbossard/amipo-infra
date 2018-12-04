@@ -1,7 +1,7 @@
 ---
 
 # Provisioning config
-enableProvisionWebfront: no
+enableProvisionWebfront: yes
     
 # Domain name config
 websiteRootName: "amipo.dev"

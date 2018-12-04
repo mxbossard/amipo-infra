@@ -4,6 +4,8 @@
   hosts: host
   become: yes
 
+  vars:
+
   tasks:
     - debug: msg="Provision AMIPO dev VMs"
 
@@ -18,14 +20,20 @@
         name: ["vim", "rsync", "git"]
         state: present
 
+    - debug: var=enableProvisionWebfront
+
 - import_playbook: webfront_letsencrypt_setup.yml
+  when: enableProvisionWebfront
 
 - import_playbook: webfront_nginx_install.yml
+  when: enableProvisionWebfront
 
 - import_playbook: webfront_dev_ssl_config.yml
-  when: "'development' not in group_names"
+  when: "enableProvisionWebfront and 'development' not in group_names"
 
 - import_playbook: webfront_architecture_config.yml
+  when: enableProvisionWebfront
 
 - import_playbook: homepage_release_deploy.yml
+  when: enableProvisionWebfront
 

@@ -7,14 +7,14 @@ if [ "$( whoami )" = "root" ]
 then
 	echo "Executing commands with root user"
 	adminExec="/bin/sh -c"
-elif sudo -v
+elif sudo -v 2> /dev/null
 then
 	echo "Executing command with sudo"
 	adminExec="sudo /bin/sh -c"
 else
-	echo "Escalating root privileges to execute commands"
-	su - root
-	adminExec="/bin/sh -c"
+	echo "Current user is not a sudoer. Escalating root privileges to reexecute the script"
+	su - root -c "$0" $@
+	exit 0
 fi
 
 echo "Installing packages ..."
