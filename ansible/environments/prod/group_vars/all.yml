@@ -1,10 +1,13 @@
 ---
 
+# Provisioning config
+enableProvisionWebfront: yes
+    
 # Clear ssh user used by ansible to not override user specified in ssh config
 ansible_user: ""
 
 # Domain name config
-websiteRootName: "amipo.mby.ovh"
+websiteRootName: "amipo.fr"
 websiteDomainName: "www.{{ websiteRootName }}"
 websiteDomainNameAliases: []
 
@@ -14,6 +17,6 @@ ssl_cert_parent_dir: "/etc/letsencrypt/live"
 ssl_certs_map:
   www.amipo:
     common_name: "{{ websiteDomainName }}"
-    alt_names: ["{{ websiteRootName }}", "test.{{ websiteRootName }}"]
+    alt_names: ["{{ websiteRootName }}"]
 
 

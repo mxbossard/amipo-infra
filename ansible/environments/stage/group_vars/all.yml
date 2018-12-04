@@ -1,14 +1,17 @@
 ---
 
 # Provisioning config
-enableProvisionWebfront: no
+enableProvisionWebfront: yes
     
-# Domain name config
-websiteRootName: "amipo.dev"
-websiteDomainName: "www.{{ websiteRootName }}"
-websiteDomainNameAliases: [] #["amipo.dev"]
+# Clear ssh user used by ansible to not override user specified in ssh config
+ansible_user: ""
 
-ssl_cert_parent_dir: "/etc/openssl/dev"
+# Domain name config
+websiteRootName: "amipo.mby.ovh"
+websiteDomainName: "www.{{ websiteRootName }}"
+websiteDomainNameAliases: []
+
+ssl_cert_parent_dir: "/etc/letsencrypt/live"
 
 # Map of ssl certs
 ssl_certs_map:
