@@ -1,7 +1,7 @@
 ---
 
 - name: Provision AMIPO dev machines
-  hosts: host
+  hosts: amipo1.dev
   become: yes
 
 - import_playbook: provision_amipo.yml

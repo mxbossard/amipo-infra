@@ -19,4 +19,9 @@ ssl_certs_map:
     common_name: "{{ websiteDomainName }}"
     alt_names: ["{{ websiteRootName }}"]
 
+# Env config
+envName: production
+envShortName: prod
+envPs1Color: $bldred
+envPs1BgdColor: $bakred
 

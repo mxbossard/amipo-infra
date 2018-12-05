@@ -1,0 +1,23 @@
+---
+
+# This playbook is responsible to increase webfront security.
+# Configure firewall
+
+
+- name: Webfront security
+  hosts: webfront
+  become: yes
+
+  vars:
+
+  tasks:
+    - name: Install nginx and dependencies
+      apk:
+        name: "{{ item }}"
+      with_items:
+        - openssl
+        - logrotate
+      notify: Reload nginx
+      tags: ["install"]
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

@@ -7,6 +7,7 @@
   vars:
     provisioningKeyFilepath: "{{ controllerHome }}/.ssh/provisioning_key"
     hostSshDir: "{{ controllerHome }}/.host_ssh"
+    bash_profile_filepath: "{{ controllerHome }}/.bash_profile"
 
   tasks:
 
@@ -21,26 +22,23 @@
         name: ["dnsmasq", "vim", "rsync", "tree"]
         state: present
 
+    - name: Configure Controller bash env
+      import_tasks: tasks/bash_env_setup.yml
+
     - name: Add cd ansible to .profile file
       lineinfile: 
-        path: "{{ controllerHome }}/.profile" 
+        path: "{{ bash_profile_filepath }}" 
         line: "cd {{ ansibleHome }}" 
 
     - name: Update PATH
       lineinfile: 
-        path: "{{ controllerHome }}/.profile" 
+        path: "{{ bash_profile_filepath }}" 
         line: "PATH=$PATH:/vagrant/scripts" 
 
     - name: Config ansible role path
       lineinfile: 
-        path: "{{ controllerHome }}/.profile" 
+        path: "{{ bash_profile_filepath }}" 
         line: "ANSIBLE_ROLES_PATH='{{ ansibleHome }}/roles'" 
-
-#    - name: Add route in .profile
-#      lineinfile: 
-#        path: "{{ controllerHome }}/.profile"
-#        regexp: "ip route add {{ lxcSubnet }}"
-#        line: "ip route show | grep '{{ lxcSubnet }}' > /dev/null || sudo ip route add {{ lxcSubnet }} via {{ lxcHostIp }} || true" 
 
     - name: Create proxy config file if it does not exists
       copy:

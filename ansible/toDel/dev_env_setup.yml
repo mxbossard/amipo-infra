@@ -1,0 +1,49 @@
+---
+
+# This playbook set up the dev environment on vagrant dev machines
+
+- name: Setup dev environment
+  hosts: dev_workspace:controller
+  become: yes
+
+  vars:
+    bash_startup_templates:
+      etc:
+        templates: "{{ lookup('fileglob', 'templates/dev_workspace/etc/*.j2').split(',') }}"
+        dest: /etc
+        owner: root
+      profiled:
+        templates: "{{ lookup('fileglob', 'templates/dev_workspace/etc_profile.d/*.j2').split(',') }}"
+        dest: /etc/profile.d
+        owner: root
+      home:
+        templates: "{{ lookup('fileglob', 'templates/dev_workspace/home/.*.j2').split(',') }}"
+        dest: "{{ devWorkspaceHome }}"
+        owner: "{{ devWorkspaceUser }}"
+
+  tasks:
+    - set_fact:
+        host_persistent_dir: "{{ persistentHome }}/{{ inventory_hostname }}"
+
+    - debug: var=bash_startup_templates
+ 
+    - name: Ensure persistent directory exists
+      file:
+        path: "{{ host_persistent_dir }}"
+        owner: "{{ vagrantUser }}"
+        state: directory
+        mode: 0777
+
+    - name: Deploy bash startup files
+      template:
+        src: "{{ item.1 }}"
+        dest: "{{ item.0.dest }}/{{ item.1 | basename | regex_replace('\\.j2$', '') }}"
+        owner: "{{ item.0.owner }}"
+        mode: 0644
+      loop: "{{ bash_startup_templates | subelements('templates') }}" 
+
+#    - name: Move bash_history file to persistent dir
+#      file:
+#        path:
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

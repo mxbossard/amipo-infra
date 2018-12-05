@@ -14,7 +14,11 @@
         name: ["vim", "rsync", "git"]
         state: present
 
-    - debug: var=enableProvisionWebfront
+    - name: Configure bash env
+      import_tasks: tasks/bash_env_setup.yml
+      when: "'development' in group_names"
+
+- import_playbook: security_hardening_setup.yml
 
 - import_playbook: webfront_nginx_install.yml
   when: enableProvisionWebfront

@@ -1,0 +1,24 @@
+---
+
+# set up the bash environment
+
+- set_fact:
+    host_persistent_dir: "{{ persistentHome }}/{{ inventory_hostname }}"
+
+- name: Ensure persistent directory exists
+  file:
+    path: "{{ host_persistent_dir }}"
+    owner: "{{ vagrantUser }}"
+    state: directory
+    mode: 0777
+  when: "'dev_workspace' in group_names"
+
+- name: Deploy bash startup files
+  template:
+    src: "{{ item.1 }}"
+    dest: "{{ item.0.dest }}/{{ item.1 | basename | regex_replace('\\.j2$', '') }}"
+    owner: "{{ item.0.owner }}"
+    mode: 0644
+  loop: "{{ bashStartupTemplates | subelements('templates') }}" 
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

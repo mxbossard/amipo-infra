@@ -1,0 +1,7 @@
+---
+
+# Env config
+envName: controller
+envShortName: ctlr
+envPs1Color: $bldwht
+envPs1BgdColor: $bakblk

@@ -19,4 +19,9 @@ ssl_certs_map:
     common_name: "{{ websiteDomainName }}"
     alt_names: ["{{ websiteRootName }}", "test.{{ websiteRootName }}"]
 
+# Env config
+envName: stagging
+envShortName: stage
+envPs1Color: $bldpur
+envPs1BgdColor: $bakpur
 

@@ -6,7 +6,7 @@
 
   vars:
     provisioning_key_filepath: "{{ controllerHome }}/.ssh/provisioning_key"
-    ssh_config_template: "ssh_config.j2"
+    ssh_config_template: "controller/ssh_config.j2"
     ssh_credentials_sample: "files/ssh_credentials.yml.sample"
 
   tasks:
@@ -40,7 +40,7 @@
 
     - name: Copy ssh config
       template:
-        src: ssh_config.j2
+        src: "{{ ssh_config_template }}"
         dest: "{{ controllerHome }}/.ssh/config"
         owner: "{{ controllerUser }}"
         group: "{{ controllerUser }}"

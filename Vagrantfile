@@ -152,7 +152,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Provision the VM with the ansible installed on controller
     machine.vm.provision "ansible" do |ansible|
       ansible.playbook_command = "#{vagrant_root}/scripts/ansible-playbook"
-      ansible.playbook = "#{vagrant_root}/ansible/provision_dev_amipo.yml"
+      ansible.playbook = "#{vagrant_root}/ansible/provision_dev_amipo1.yml"
       ansible.verbose = true
       ansible.limit = "all"
     end
