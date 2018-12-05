@@ -1,0 +1,88 @@
+---
+
+# This playbook is responsible to keep hosts secure.
+
+### Implemented:
+# Install fail2ban
+# Configure automatic security updates
+# Configure ssh, disable ssh root login, disable ssw password login
+
+### TODO:
+# Configure firewall
+# Prevent not admin account to sudo without password
+# Remove unknown user account
+
+- name: Security hardening
+  hosts: host
+  become: yes
+
+  vars:
+
+  vars_files: 
+    - vars_files/unattended-upgrades.yml
+
+  roles:
+    - role: geerlingguy.firewall
+
+  tasks:
+    - name: Install packages
+      package:
+        name: ["fail2ban", "unattended-upgrades", "apt-listchanges", "bsd-mailx"]
+        state: present
+
+    - name: Ensure fail2ban is running and enabled on boot.
+      service: 
+        name: fail2ban
+        state: started
+        enabled: yes
+
+    # --- START Configure automatic security updates
+    - name: create APT auto-upgrades configuration
+      template:
+        src: security/auto-upgrades.j2
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        mode: 0644
+    
+    - name: create unattended-upgrades configuration
+      template:
+        src: security/unattended-upgrades.j2
+        dest: /etc/apt/apt.conf.d/50unattended-upgrades
+        mode: 0644
+    # --- END Configure automatic security updates
+
+    - name: Update SSH configuration to be more secure.
+      lineinfile:
+        dest: "/etc/ssh/sshd_config"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+        - regexp: "^PubkeyAuthentication"
+          line: "PubkeyAuthentication yes"
+        - regexp: "^PasswordAuthentication"
+          line: "PasswordAuthentication no"
+        - regexp: "^PermitRootLogin"
+          line: "PermitRootLogin no"
+        - regexp: "^Port"
+          line: "Port 22"
+        - regexp: "^UseDNS"
+          line: "UseDNS no"
+        - regexp: "^PermitEmptyPasswords"
+          line: "PermitEmptyPasswords no"
+        - regexp: "^ChallengeResponseAuthentication"
+          line: "ChallengeResponseAuthentication no"
+        - regexp: "^UsePAM"
+          line: "UsePAM no"
+        - regexp: "^GSSAPIAuthentication"
+          line: "GSSAPIAuthentication no"
+        - regexp: "^X11Forwarding"
+          line: "X11Forwarding no"
+      notify: restart ssh
+
+  handlers:
+    - name: restart ssh
+      service: 
+        name: sshd
+        state: restarted
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

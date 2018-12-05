@@ -1,0 +1,7 @@
+---
+
+### firewall role config
+firewall_allowed_tcp_ports:
+  - "22"
+  - "80"
+  - "443"
