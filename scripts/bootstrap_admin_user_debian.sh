@@ -60,7 +60,8 @@ echo "Creating or updating admin user..."
 $adminExec "addgroup --system --quiet admin"
 $adminExec "addgroup --system --quiet $adminUsername"
 $adminExec "adduser --system --group --shell /bin/sh --home $adminHome --disabled-password --quiet $adminUsername"
-$adminExec "usermod --lock --shell /bin/sh --home $adminHome --groups admin,$adminUsername $adminUsername"
+$adminExec "usermod --shell /bin/sh --home $adminHome --groups admin,$adminUsername $adminUsername"
+$adminExec "passwd -u $adminUsername"
 
 # Configure sudo without password for admin group
 echo "Configure sudoers"
