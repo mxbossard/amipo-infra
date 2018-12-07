@@ -2,6 +2,9 @@
 .amipoLocal
 .dev_root_AC
 
+# Persistent directory for dev workspace usage
+.persistent
+
 # SSH Credentials personal files
 .privateCredentials
 
