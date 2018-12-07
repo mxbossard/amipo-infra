@@ -6,6 +6,12 @@ server {
     server_name {{ server.server_name | join(' ') }};
     root {{ server.root }};
 
+  {% if server.directives is defined %}
+  {% for directive in server.directives %}
+    {{ directive }}
+  {% endfor %}
+  {% endif %}
+
   {% include 'amipo_error_pages.part.j2' %}
 
   {% include 'amipo_security.part.j2' %}

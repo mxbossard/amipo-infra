@@ -13,6 +13,10 @@ webfront_architecture_map:
       cert_name: "www.amipo"
       server_name: "{{ [websiteDomainName] + websiteDomainNameAliases }}"
       root: "{{ homepage_deploy_dir }}"
+      directives:
+        - "# HSTS (ngx_http_headers_module is required) (15768000 seconds = 6 months)"
+        - "add_header Strict-Transport-Security max-age=15768000;"
+          
       locations:
         "/":
           try_files: "$uri $uri/index.html =404"
