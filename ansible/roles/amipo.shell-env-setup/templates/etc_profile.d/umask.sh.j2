@@ -1,3 +1,5 @@
+# {{ ansible_managed }}
+
 # By default, the umask should be set.
 if [ "$(id -gn)" = "$(id -un)" -a $EUID -gt 99 ] ; then
   umask 002

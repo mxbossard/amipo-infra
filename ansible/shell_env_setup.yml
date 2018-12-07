@@ -1,0 +1,11 @@
+---
+
+- name: Setup shell env
+  hosts: all
+  become: yes
+
+  vars:
+
+  roles:
+    - amipo.shell-env-setup
+
