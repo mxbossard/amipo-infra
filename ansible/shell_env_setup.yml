@@ -1,7 +1,7 @@
 ---
 
 - name: Setup shell env
-  hosts: all
+  hosts: host
   become: yes
 
   vars:
@@ -9,3 +9,11 @@
   roles:
     - amipo.shell-env-setup
 
+  tasks:
+    - name: Check ssh auth
+      local_action: "shell ssh -o UserKnownHostsFile=/dev/null -F {{ controllerHome }}/.ssh/config {{ inventory_hostname }} 'hostname'"
+      delegate_facts: False
+      register: result
+      become: no
+      when: "'development' in group_names"
+    

@@ -1,13 +1,21 @@
 # {{ ansible_managed }}
 
 Host *
-	IdentitiesOnly=yes
+	IdentitiesOnly yes
+	StrictHostKeyChecking no
 	ServerAliveInterval 2
     	ServerAliveCountMax 5
 	GSSAPIAuthentication no
 
 Host framagit.org
 	StrictHostKeyChecking no
+
+# Controller
+Host controller.dev
+	Hostname	controller.dev
+	Port		22
+	User		vagrant
+	IdentityFile	/vagrant/.privateCredentials/vagrant_insecure_private_key
 
 # Development
 Host amipo1.dev
