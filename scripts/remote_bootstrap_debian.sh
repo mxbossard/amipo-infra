@@ -36,13 +36,13 @@ then
 	exit 1
 fi
 
-remoteExec="ssh -tt $sshHost /bin/sh -e"
+remoteExec="ssh -o UserKnownHostsFile=/dev/null -tt $sshHost /bin/sh"
 
 boostrapAnsibleScript="bootstrap_ansible_debian.sh"
 boostrapAdminScript="bootstrap_admin_user_debian.sh"
 sshPubKeyFilename="$( basename $sshPubKeyFilepath )"
 
-scp $scriptDir/$boostrapAnsibleScript $scriptDir/$boostrapAdminScript $sshPubKeyFilepath $sshHost:/tmp
+scp -o UserKnownHostsFile=/dev/null $scriptDir/$boostrapAnsibleScript $scriptDir/$boostrapAdminScript $sshPubKeyFilepath $sshHost:/tmp
 
 echo "Warning ! Commands are executed on remote machine. You may be prompted for remote root password."
 

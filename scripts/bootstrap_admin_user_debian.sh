@@ -57,10 +57,12 @@ authorizedKeysFilepath="$adminHome/.ssh/authorized_keys"
 
 # Add admin user with disabled password login
 echo "Creating or updating admin user..."
-$adminExec "addgroup --system --quiet admin"
-$adminExec "addgroup --system --quiet $adminUsername"
-$adminExec "adduser --system --group --shell /bin/sh --home $adminHome --disabled-password --quiet $adminUsername"
-$adminExec "usermod --shell /bin/sh --home $adminHome --groups admin,$adminUsername $adminUsername"
+$adminExec "addgroup --system --quiet admin" || true
+#$adminExec "addgroup --system --quiet $adminUsername" || true
+$adminExec "addgroup --quiet $adminUsername" || true
+#$adminExec "adduser --system --group --shell /bin/sh --home $adminHome --disabled-password --quiet $adminUsername"
+$adminExec "adduser --ingroup $adminUsername --shell /bin/bash --home $adminHome --disabled-password --quiet $adminUsername" || true
+$adminExec "usermod --shell /bin/bash --home $adminHome --groups admin,$adminUsername $adminUsername"
 $adminExec "passwd -u $adminUsername"
 
 # Configure sudo without password for admin group

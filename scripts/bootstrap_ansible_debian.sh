@@ -1,6 +1,7 @@
 #! /bin/sh
 
-PACKAGES_TO_INSTALL="python3.5 sudo"
+#PACKAGES_TO_INSTALL="python3.5 sudo"
+PACKAGES_TO_INSTALL="sudo"
 
 adminExec=""
 if [ "$( whoami )" = "root" ]
@@ -21,7 +22,7 @@ echo "Installing packages ..."
 $adminExec "apt-get update"
 $adminExec "apt-get install -y $PACKAGES_TO_INSTALL"
 
-echo "Adding python3 in PATH"
-test -f /usr/bin/python && $adminExec "rm /usr/bin/python"
-$adminExec "ln -s /usr/bin/python3.5 /usr/bin/python"
+#echo "Adding python3 in PATH"
+#test -f /usr/bin/python && $adminExec "rm /usr/bin/python"
+#$adminExec "ln -s /usr/bin/python3.5 /usr/bin/python"
 
