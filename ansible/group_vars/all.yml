@@ -48,22 +48,3 @@ amipo:
     admin: {local: admin, domain: amipo.fr}
     info: {local: info, domain: amipo.fr}
 
-# Config for bash_env_config.yml task
-bashStartupTemplates:
-  etc:
-    templates: "{{ lookup('fileglob', 'templates/dev_workspace/etc/*.j2').split(',') }}"
-    dest: /etc
-    owner: root
-  profiled:
-    templates: "{{ lookup('fileglob', 'templates/dev_workspace/etc_profile.d/*.j2').split(',') }}"
-    dest: /etc/profile.d
-    owner: root
-  root:
-    templates: "{{ lookup('fileglob', 'templates/dev_workspace/home/.*.j2').split(',') }}"
-    dest: "/root"
-    owner: "root"
-  home:
-    templates: "{{ lookup('fileglob', 'templates/dev_workspace/home/.*.j2').split(',') }}"
-    dest: "{{ devWorkspaceHome }}"
-    owner: "{{ devWorkspaceUser }}"
-

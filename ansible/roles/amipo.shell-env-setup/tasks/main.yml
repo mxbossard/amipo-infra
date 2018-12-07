@@ -13,12 +13,21 @@
     mode: 0777
   when: "'dev_workspace' in group_names"
 
-- name: Deploy bash startup files
+- name: Deploy root bash startup files
   template:
     src: "{{ item.1 }}"
     dest: "{{ item.0.dest }}/{{ item.1 | basename | regex_replace('\\.j2$', '') }}"
     owner: "{{ item.0.owner }}"
     mode: 0644
   loop: "{{ bashStartupTemplates | subelements('templates') }}" 
+
+- name: Deploy home bash startup files
+  template:
+    src: "{{ item }}"
+    dest: "~/{{ item | basename | regex_replace('\\.j2$', '') }}"
+    mode: 0644
+  loop: "{{ bashStartupTemplates.home.templates }}" 
+  become: no
+  #when: "ansible_user != 'root'"
 
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

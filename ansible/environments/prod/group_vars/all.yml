@@ -3,9 +3,6 @@
 # Provisioning config
 enableProvisionWebfront: yes
     
-# Clear ssh user used by ansible to not override user specified in ssh config
-ansible_user: ""
-
 # Domain name config
 websiteRootName: "{{ amipoRootDomainNames.prod }}"
 websiteDomainName: "www.{{ websiteRootName }}"

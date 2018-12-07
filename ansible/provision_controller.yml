@@ -9,21 +9,20 @@
     hostSshDir: "{{ controllerHome }}/.host_ssh"
     bash_profile_filepath: "{{ controllerHome }}/.bash_profile"
 
+  roles:
+    - amipo.shell-env-setup
+    - amipo.security-hardening
+
   tasks:
-
-    - name: Wait for machine network to be up
-      wait_for:
-        host: 0.0.0.0
-        port: 22
-        timeout: 60
-
     - name: Install some packages
       package:
         name: ["dnsmasq", "vim", "rsync", "tree"]
         state: present
 
-    - name: Configure Controller bash env
-      import_tasks: tasks/bash_env_setup.yml
+    - name: Ensure .profile exists
+      file: 
+        path: "{{ bash_profile_filepath }}" 
+        state: touch
 
     - name: Add cd ansible to .profile file
       lineinfile: 

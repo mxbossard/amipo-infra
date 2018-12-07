@@ -1,0 +1,12 @@
+---
+
+- name: Setup bash env
+  hosts: host
+  become: yes
+
+  vars:
+
+  tasks:
+    - name: Configure bash env
+      import_tasks: tasks/bash_env_setup.yml
+

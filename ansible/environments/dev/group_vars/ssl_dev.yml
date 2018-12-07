@@ -1,7 +1,7 @@
 ---
 
 # Dev root AC generation config
-root_AC_dir: "{{ vagrantHostDir }}/.dev_root_AC"
+root_AC_dir: "{{ privateCredentialsHome }}"
 root_AC_privkey_filepath: "{{ root_AC_dir }}/personnal_root_ac_privkey.pem"
 root_AC_privkey_cipher: "genrsa"
 root_AC_privkey_numbits: 4096

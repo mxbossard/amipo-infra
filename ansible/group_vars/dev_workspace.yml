@@ -1,5 +1,0 @@
----
-
-devWorkspaceHome: "{{ vagrantHome }}"
-devWorkspaceUser: "{{ vagrantUser }}"
-

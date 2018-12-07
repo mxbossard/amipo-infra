@@ -41,9 +41,10 @@
 
 - name: Init openssl serial
   copy:
-    content: "0{{ 999999999 | random }}"
+    content: "01"
     dest: "/etc/openssl/work/demoCA/serial"
     mode: "0400"
+    force: no
   when: csr_result is changed
 
 - name: Init openssl index.txt

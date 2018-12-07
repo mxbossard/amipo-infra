@@ -2,9 +2,17 @@ Host *
 	IdentitiesOnly=yes
 	ServerAliveInterval 2
     	ServerAliveCountMax 5
+	GSSAPIAuthentication no
 
 Host framagit.org
 	StrictHostKeyChecking no
+
+# Development
+Host amipo1.dev
+	Hostname	amipo1.dev
+	Port		22
+	User		{{ vagrantUser }}
+	IdentityFile	{{ privateCredentialsHome }}/vagrant_insecure_private_key
 
 # Stagging
 {% if sshConfig.stage.amipo1 is defined %}

@@ -23,12 +23,11 @@
     certbot_dir: /opt/certbot
 
     certbot_test_command: "certbot -h"
-    certbot_stage_options: "" #--staging"
     # Webroot use the front web server to validate domains property
-    certbot_webroot_create_command: "certbot certonly {{ certbot_stage_options }} --noninteractive --agree-tos --webroot --webroot-path {{ default_root_dir }} --email {{ cert_item.value.email | default(admin_email) }} -d {{ cert_item.value.common_name }} -d {{ cert_item.value.alt_names | join(',') }}"
+    certbot_webroot_create_command: "certbot certonly {{ certbotStageOptions }} --noninteractive --agree-tos --webroot --webroot-path {{ default_root_dir }} --email {{ cert_item.value.email | default(admin_email) }} -d {{ cert_item.value.common_name }} -d {{ cert_item.value.alt_names | join(',') }}"
     # Standalone use a standalone web server to validate domains property
-    certbot_standalone_create_command: "certbot certonly {{ certbot_stage_options }} --noninteractive --agree-tos --standalone --email {{ cert_item.value.email | default(admin_email) }} -d {{ cert_item.value.common_name }} -d {{ cert_item.value.alt_names | join(',') }}"
-    certbot_auto_renew_options: "--quiet --no-self-upgrade {{ certbot_stage_options }}"
+    certbot_standalone_create_command: "certbot certonly {{ certbotStageOptions }} --noninteractive --agree-tos --standalone --email {{ cert_item.value.email | default(admin_email) }} -d {{ cert_item.value.common_name }} -d {{ cert_item.value.alt_names | join(',') }}"
+    certbot_auto_renew_options: "--quiet --no-self-upgrade {{ certbotStageOptions }}"
 
     webfront_http_test_content: "foo"
     webfront_http_test_file: "{{ default_root_dir }}/http_test.txt"

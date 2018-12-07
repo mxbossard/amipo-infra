@@ -1,0 +1,18 @@
+---
+- name: Include vars of stuff.yaml into the 'stuff' variable (2.2).
+  include_vars:
+    file: defaults/unattended-upgrades.yml
+
+- name: create APT auto-upgrades configuration
+  template:
+    src: security/auto-upgrades.j2
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    mode: 0644
+
+- name: create unattended-upgrades configuration
+  template:
+    src: security/unattended-upgrades.j2
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    mode: 0644
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

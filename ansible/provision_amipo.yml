@@ -6,32 +6,40 @@
 
   vars:
 
+  roles:
+    - amipo.shell-env-setup
+    - amipo.security-hardening
+
   tasks:
     - debug: msg="Provision AMIPO dev VMs"
 
     - name: Install some packages
       package:
-        name: ["vim", "rsync", "git"]
+        name: ["vim", "rsync", "git", "tree", "htop", "bash-completion"]
         state: present
-
-    - name: Configure bash env
-      import_tasks: tasks/bash_env_setup.yml
-      when: "'development' in group_names"
-
-- import_playbook: security_hardening_setup.yml
 
 - import_playbook: webfront_nginx_install.yml
   when: enableProvisionWebfront
+  tags: 
+    - webfront
 
 - import_playbook: webfront_letsencrypt_setup.yml
   when: enableProvisionWebfront
+  tags: 
+    - webfront
 
 - import_playbook: webfront_dev_ssl_config.yml
   when: "enableProvisionWebfront and 'development' in group_names"
+  tags: 
+    - webfront
 
 - import_playbook: webfront_architecture_config.yml
   when: enableProvisionWebfront
+  tags: 
+    - webfront
 
 - import_playbook: homepage_release_deploy.yml
   when: enableProvisionWebfront
+  tags: 
+    - webfront
 

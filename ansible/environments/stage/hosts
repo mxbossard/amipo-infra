@@ -4,6 +4,9 @@ amipo1.stage
 [host]
 amipo1.stage	
 
+[amipo1]
+amipo1.stage
+
 [webfront]
 amipo1.stage	
 

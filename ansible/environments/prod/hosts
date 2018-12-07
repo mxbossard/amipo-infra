@@ -4,6 +4,9 @@ amipo1.prod
 [host]
 amipo1.prod	
 
+[amipo1]
+amipo1.prod	
+
 [webfront]
 amipo1.prod	
 
