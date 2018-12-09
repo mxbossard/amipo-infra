@@ -1,0 +1,22 @@
+---
+
+# This playbook is responsible to setup prometheus server. 
+
+- name: Setup prometheus server
+  hosts: prometheus
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - cloudalchemy.prometheus
+
+  vars:
+    prometheus_version: 2.5.0
+    prometheus_web_listen_address: "127.0.0.1:9090"
+    prometheus_web_external_url: "https://{{ websiteDomainName }}/prom"
+    #prometheus_global:
+          
+
+  tasks:
+
+# vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2

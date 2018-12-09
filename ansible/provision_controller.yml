@@ -14,10 +14,14 @@
     - amipo.security-hardening
 
   tasks:
-    - name: Install some packages
+    - name: Install some deb packages
       package:
         name: ["dnsmasq", "vim", "rsync", "tree"]
         state: present
+
+    - name: Install some pip packages
+      pip:
+        name: jmespath
 
     - name: Ensure .profile exists
       file: 

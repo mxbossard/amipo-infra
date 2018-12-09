@@ -3,7 +3,7 @@
     add_header Strict-Transport-Security max-age=15768000;
     
     # Allow only GET HEAD and POST
-    if ($request_method !~ ^(GET|HEAD|POST)$ )
+    if ($request_method !~ ^(GET|HEAD|POST|PUT)$ )
     {
            return 405;
     }
