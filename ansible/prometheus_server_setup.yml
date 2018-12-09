@@ -12,8 +12,17 @@
 
   vars:
     prometheus_version: 2.5.0
-    prometheus_web_listen_address: "127.0.0.1:9090"
+    prometheus_web_listen_address: "0.0.0.0:9090"
     prometheus_web_external_url: "https://{{ websiteDomainName }}/prom"
+
+    prometheus_targets:
+      node:
+        - targets:
+            - "{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:9100"
+          labels:
+            env: "{{ envShortName }}"
+            job: node
+
     #prometheus_global:
           
 

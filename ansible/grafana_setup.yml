@@ -13,7 +13,7 @@
   vars:
     grafana_version: 5.4.0
     grafana_force_install: yes
-    grafana_address: 127.0.0.1
+    grafana_address: 0.0.0.0
     grafana_port: 3000
     grafana_domain: "{{ websiteDomainName }}"
     grafana_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
