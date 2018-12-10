@@ -10,6 +10,12 @@ amipo1.stage
 [webfront]
 amipo1.stage	
 
+[prometheus]
+amipo1.stage	
+
+[grafana]
+amipo1.stage	
+
 [controller]
 controller.dev
 

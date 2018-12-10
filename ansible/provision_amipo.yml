@@ -17,6 +17,16 @@
       package:
         name: ["vim", "rsync", "git", "tree", "htop", "bash-completion"]
         state: present
+      tags: 
+        - system
+
+    - name: Add hostname in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: "^127.0.0.1"
+        line: "127.0.0.1 localhost {{ inventory_hostname }}"
+      tags: 
+        - system
 
 - import_playbook: webfront_nginx_install.yml
   when: enableProvisionWebfront
