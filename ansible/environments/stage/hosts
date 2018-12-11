@@ -1,21 +1,4 @@
-controller.dev	connection=local
-amipo1.stage	
+### List of hosts in stage env
 
-[host]
-amipo1.stage	
-
-[amipo1]
-amipo1.stage
-
-[webfront]
-amipo1.stage	
-
-[prometheus]
-amipo1.stage	
-
-[grafana]
-amipo1.stage	
-
-[controller]
-controller.dev
+amipo1	ansible_host=amipo1.stage	
 

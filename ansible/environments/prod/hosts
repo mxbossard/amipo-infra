@@ -1,15 +1,4 @@
-controller.dev	connection=local
-amipo1.prod	
+### List of hosts in prod env
 
-[host]
-amipo1.prod	
-
-[amipo1]
-amipo1.prod	
-
-[webfront]
-amipo1.prod	
-
-[controller]
-controller.dev
+amipo1	ansible_host=amipo1.prod
 

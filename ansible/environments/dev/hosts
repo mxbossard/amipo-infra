@@ -1,23 +1,13 @@
-controller.dev	connection=local ansible_user=vagrant ansible_private_key_file=/vagrant/.privateCredentials/vagrant_insecure_private_key
-amipo1.dev
+
+### List of hosts in dev env
+amipo1	ansible_host=amipo1.dev
 
 [development]
-amipo1.dev
+amipo1
 
-[amipo1]
-amipo1.dev
 
-[host]
-amipo1.dev
-
-[webfront]
-amipo1.dev
-
-[prometheus]
-amipo1.dev
-
-[grafana]
-amipo1.dev
+### Controller and dev workspace: in dev env only
+controller.dev connection=local ansible_user=vagrant ansible_private_key_file=/vagrant/.privateCredentials/vagrant_insecure_private_key
 
 [controller]
 controller.dev

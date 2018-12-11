@@ -1,0 +1,15 @@
+
+### Common to all env groups
+
+[host]
+amipo1
+
+[webfront]
+amipo1
+
+[prometheus]
+amipo1
+
+[grafana]
+amipo1
+
