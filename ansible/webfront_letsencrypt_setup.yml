@@ -22,7 +22,7 @@
     # Where to put Certbot when installing from source.
     certbot_dir: /opt/certbot
 
-    certbot_test_command: "certbot -h"
+    certbot_test_command: "certbot --no-self-upgrade -n -h"
     # Webroot use the front web server to validate domains property
     certbot_webroot_create_command: "certbot certonly {{ certbotStageOptions }} --noninteractive --agree-tos --webroot --webroot-path {{ default_root_dir }} --email {{ cert_item.value.email | default(admin_email) }} -d {{ cert_item.value.common_name }} -d {{ cert_item.value.alt_names | join(',') }}"
     # Standalone use a standalone web server to validate domains property
@@ -79,6 +79,7 @@
       copy:
         content: "{{ webfront_http_test_content }}"
         dest: "{{ webfront_http_test_file }}"
+      changed_when: no
       ignore_errors: yes
 
     - name: Verify test file is available via http
@@ -86,6 +87,7 @@
         url: "http://{{ websiteDomainName }}/{{ webfront_http_test_file | basename }}"
         dest: "{{ webfront_http_test_download_path }}"
       register: http_test_check
+      changed_when: no
       ignore_errors: yes
 
     - name: Remove test files.
@@ -95,16 +97,18 @@
       with_items:
         - "{{ webfront_http_test_file }}"
         - "{{ webfront_http_test_download_path }}"
+      changed_when: no
 
     - name: Generate new certificate with webroot if it is missing.
       shell: "{{ certbot_webroot_create_command }}"
       args:
-        creates: "{{ ssl_cert_root_dir }}/{{ cert_item.key }}/cert.pem"
+        creates: "{{ ssl_cert_root_dir }}/{{ cert_item.value.common_name }}/cert.pem"
       with_dict: "{{ ssl_certs_map }}"
       loop_control: 
         loop_var: cert_item
       when: "'development' not in group_names and not http_test_check.failed"
       register: certbot_result
+      notify: Reload nginx
 
     - name: Stop nginx to be able to start certbot standalone server
       service:
@@ -112,11 +116,12 @@
         state: stopped
       when: "'development' not in group_names and http_test_check.failed"
       ignore_errors: yes
+      notify: Reload nginx
 
     - name: Generate new certificate with standalone if it is missing.
       shell: "{{ certbot_standalone_create_command }}"
       args:
-        creates: "{{ ssl_cert_root_dir }}/{{ cert_item.key }}/cert.pem"
+        creates: "{{ ssl_cert_root_dir }}/{{ cert_item.value.common_name }}/cert.pem"
       with_dict: "{{ ssl_certs_map }}"
       loop_control: 
         loop_var: cert_item
@@ -134,12 +139,7 @@
       loop_control: 
         loop_var: cert_item
       when: "'development' not in group_names"
-
-    - name: Start nginx
-      service:
-        name: nginx
-        state: reloaded
-      when: "'development' not in group_names"
+      notify: Reload nginx
 
     - name: Add cron job for certbot renewal.
       cron:
@@ -148,6 +148,13 @@
         minute: "30"
         hour: "3"
         user: "{{ certbot_user }}"
+      when: "'development' not in group_names"
+
+  handlers:
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
       when: "'development' not in group_names"
 
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2
