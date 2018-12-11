@@ -39,9 +39,14 @@
     mode: "0755"
   when: csr_result is changed
 
-- name: Init openssl serial
+- name: Collect minimum facts 
+  setup:
+    gather_subset:
+      - '!all'
+
+- name: Init openssl serial based on epoch time
   copy:
-    content: "01"
+    content: "0{{ ansible_date_time.epoch | int / 10 - 150000000 }}"
     dest: "/etc/openssl/work/demoCA/serial"
     mode: "0400"
     force: no
