@@ -24,7 +24,7 @@
       lineinfile:
         path: /etc/hosts
         regexp: "^127.0.0.1"
-        line: "127.0.0.1 localhost {{ inventory_hostname }}"
+        line: "127.0.0.1 localhost {{ inventory_hostname }} {{ ansible_host }}"
       tags: 
         - system
 
@@ -52,4 +52,22 @@
   when: enableProvisionWebfront
   tags: 
     - webfront
+
+- import_playbook: prometheus_server_setup.yml
+  when: enableProvisionPrometheus
+  tags: 
+    - monitoring
+    - prometheus
+
+- import_playbook: node-exporter-setup.yml
+  when: enableProvisionPrometheus
+  tags: 
+    - monitoring
+    - prometheus
+
+- import_playbook: grafana_setup.yml
+  when: enableProvisionGrafana
+  tags: 
+    - monitoring
+    - grafana
 

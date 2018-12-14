@@ -1,8 +1,5 @@
 ---
 
-# Provisioning config
-enableProvisionWebfront: yes
-    
 # Domain name config
 websiteRootName: "{{ amipoRootDomainNames.stage }}"
 websiteDomainName: "www.{{ websiteRootName }}"

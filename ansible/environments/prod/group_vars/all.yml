@@ -1,8 +1,5 @@
 ---
 
-# Provisioning config
-enableProvisionWebfront: yes
-    
 # Domain name config
 websiteRootName: "{{ amipoRootDomainNames.prod }}"
 websiteDomainName: "www.{{ websiteRootName }}"

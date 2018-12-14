@@ -18,6 +18,27 @@
     grafana_domain: "{{ websiteDomainName }}"
     grafana_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
     grafana_security: { admin_user: admin, admin_password: "admin" }
-    grafana_analytics: False
+    grafana_analytics: false
+    grafana_use_provisioning: true
+    grafana_provisioning_synced: true
+
+    grafana_dashboards_dir: "resources/grafana/dashboards"
+    #grafana_dashboards:
+    #  - system_monitoring.json
+
+    grafana_datasources:
+      - name: "Prometheus"
+        type: "prometheus"
+        access: "proxy"
+        url: "http://localhost:9090/prom"
+        basicAuth: false
+        #basicAuthUser: "admin"
+        #basicAuthPassword: "password"
+        isDefault: true
+        jsonData:
+          tlsAuth: false
+          tlsAuthWithCACert: false
+          tlsSkipVerify: true
+
 
 # vi: tabstop=2 expandtab shiftwidth=2 softtabstop=2
